@@ -41,6 +41,13 @@ func TestClone_TagsBranchesRemoted(t *testing.T) {
 	assert.NotEmpty(dir) // TODO
 }
 
+func TestClone_NoCommits(t *testing.T) {
+	assert := require.New(t)
+	dir, clean := gitRemoteRepo()
+	defer clean()
+	assert.NotEmpty(dir) // TODO
+}
+
 func TestClone_RepoDoesntExist(t *testing.T) {
 	assert := require.New(t)
 	dir, clean := gitRemoteRepo()
