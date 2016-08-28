@@ -1,0 +1,10 @@
+# Configure.
+language: go
+go: 1.7
+sudo: false
+
+# Run.
+install: make install
+script: make
+after_success:
+  - go get -u github.com/mattn/goveralls
