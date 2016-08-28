@@ -6,9 +6,11 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"path"
 )
 
 func run(cwd, name string, arg ...string) *bytes.Buffer {
@@ -48,7 +50,7 @@ func gitRemoteRepo(stop string) (string, func()) {
 	defer os.RemoveAll(localDir)
 	run(localDir, "git", "init")
 	run(localDir, "git", "remote", "add", "origin", remoteDir)
-	// ioutil.WriteFile(os.)
+	ioutil.WriteFile(path.Join(localDir, "README"), []byte{"Hello World."}, 0644)
 
 	return remoteDir, clean
 }
