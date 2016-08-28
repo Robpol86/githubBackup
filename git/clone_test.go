@@ -27,7 +27,28 @@ func gitRemoteRepo() (string, func()) {
 	return dir, func() { os.RemoveAll(dir) }
 }
 
-func TestClone(t *testing.T) {
+func TestClone_Simple(t *testing.T) {
+	assert := require.New(t)
+	dir, clean := gitRemoteRepo()
+	defer clean()
+	assert.NotEmpty(dir) // TODO
+}
+
+func TestClone_TagsBranchesRemoted(t *testing.T) {
+	assert := require.New(t)
+	dir, clean := gitRemoteRepo()
+	defer clean()
+	assert.NotEmpty(dir) // TODO
+}
+
+func TestClone_RepoDoesntExist(t *testing.T) {
+	assert := require.New(t)
+	dir, clean := gitRemoteRepo()
+	defer clean()
+	assert.NotEmpty(dir) // TODO
+}
+
+func TestClone_NetworkError(t *testing.T) {
 	assert := require.New(t)
 	dir, clean := gitRemoteRepo()
 	defer clean()
