@@ -1,12 +1,8 @@
-hash: a0e44f50177b0ab7f4df0806493703918210e6b9fef30106807fb9cf220608fa
-updated: 2016-08-28T00:05:43.025888184-05:00
+hash: b664d1bb059546adbe39bbdb4ad62b43092c7858ec4768974be46358d31abc41
+updated: 2016-08-28T00:35:38.280763592-05:00
 imports:
 - name: github.com/libgit2/git2go
   version: 241aa34d83b210ceaab7029c46e05794f2ea9797
 testImports:
-- name: github.com/golang/lint
-  version: c7bacac2b21ca01afa1dee0acf64df3ce047c28f
-  subpackages:
-  - golint
 - name: github.com/stretchr/testify
-  version: f390dcf405f7b83c997eac1b06768bb9f44dec18
+  version: ""

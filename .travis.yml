@@ -1,10 +1,12 @@
 # Configure.
 language: go
 go: 1.7
-sudo: false
+sudo: required
 
 # Run.
-install: make install
+install:
+  - make install
+  - vendor/github.com/libgit2/git2go/script/install-libgit2.sh
 script: make
 after_success:
   - go get -u github.com/mattn/goveralls
