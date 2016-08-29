@@ -1,4 +1,7 @@
 # Configure.
+apt:
+  packages:
+    libgit2-dev
 language: go
 go: 1.7
 sudo: required
@@ -6,7 +9,6 @@ sudo: required
 # Run.
 install:
   - make install
-  - vendor/github.com/libgit2/git2go/script/install-libgit2.sh > /dev/null
 before_script:
   - git config --global user.email "builds@travis-ci.com"
   - git config --global user.name "Travis CI"
