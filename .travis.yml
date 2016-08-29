@@ -2,7 +2,7 @@
 addons:
   apt:
     sources:
-      - sourceline: google-cloud
+      - google-cloud
     packages:
       libgit2-dev
 language: go
