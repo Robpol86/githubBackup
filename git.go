@@ -1,4 +1,4 @@
-package githubBackup
+package main
 
 import (
 	"errors"
