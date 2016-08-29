@@ -2,7 +2,7 @@
 addons:
   apt:
     sources:
-      - sourceline: deb http://archive.ubuntu.com/ubuntu/ trusty main restricted universe
+      - sourceline: google-cloud
     packages:
       libgit2-dev
 language: go
