@@ -2,7 +2,7 @@
 addons:
   apt:
     sources:
-      - google-cloud
+      - debian-sid
     packages:
       libgit2-dev
 language: go
