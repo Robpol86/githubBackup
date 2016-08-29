@@ -46,3 +46,4 @@ test: vendor
 
 
 build: test $(PROG)
+	./$(PROG)
