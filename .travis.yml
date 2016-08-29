@@ -1,6 +1,8 @@
 # Configure.
 addons:
   apt:
+    sources:
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ xenial main restricted universe
     packages:
       libgit2-dev
 dist: trusty
