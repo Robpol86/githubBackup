@@ -50,6 +50,14 @@ func gitRemoteRepo(stop string) (string, func()) {
 	run(localDir, "git", "init")
 	run(localDir, "git", "remote", "add", "origin", remoteDir)
 	ioutil.WriteFile(path.Join(localDir, "README"), []byte("Hello World."), 0644)
+	if stop == "simple" {
+		return remoteDir, clean
+	}
+
+	// Add everything.
+	run(localDir, "git", "tag", "v1.0.0")
+	run(localDir, "git", "checkout", "-b", "feature", "master")
+	run(localDir, "git", "push", "origin", "feature", "v1.0.0")
 
 	return remoteDir, clean
 }
@@ -80,7 +88,7 @@ func TestClone_Simple(t *testing.T) {
 	assert.NotEmpty(dir) // TODO
 }
 
-func TestClone_TagsBranchesRemoted(t *testing.T) {
+func TestClone_TagsBranches(t *testing.T) {
 	assert := require.New(t)
 	dir, clean := gitRemoteRepo("")
 	defer clean()
