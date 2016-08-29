@@ -2,7 +2,7 @@
 addons:
   apt:
     sources:
-      - debian-sid
+      - git-core
     packages:
       libgit2-dev
 language: go
