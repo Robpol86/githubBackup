@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,16 +11,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func run(cwd, name string, arg ...string) *bytes.Buffer {
+func run(cwd, name string, arg ...string) *[]byte {
 	cmd := exec.Command(name, arg...)
 	cmd.Dir = cwd
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	if err := cmd.Run(); err != nil {
-		log.Print(out)
-		log.Fatal(err)
+	stdouterr, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Command: %s", cmd.Args)
+		log.Printf("stdout: %s", stdouterr)
+		log.Fatalf("go error: %s", err)
 	}
-	return &out
+	return &stdouterr
 }
 
 func gitRemoteRepo(stop string) (string, func()) {
@@ -50,6 +49,9 @@ func gitRemoteRepo(stop string) (string, func()) {
 	run(localDir, "git", "init")
 	run(localDir, "git", "remote", "add", "origin", remoteDir)
 	ioutil.WriteFile(path.Join(localDir, "README"), []byte("Hello World."), 0644)
+	run(localDir, "git", "add", "README")
+	run(localDir, "git", "commit", "-m", "Initial commit.")
+	run(localDir, "git", "push", "origin", "master")
 	if stop == "simple" {
 		return remoteDir, clean
 	}
