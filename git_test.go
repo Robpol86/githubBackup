@@ -57,9 +57,16 @@ func gitRemoteRepo(stop string) (string, func()) {
 	}
 
 	// Add everything.
+	if bytes, err := ioutil.ReadFile(".gitignore"); err != nil {
+		log.Fatal(err)
+	} else {
+		ioutil.WriteFile(path.Join(localDir, ".gitignore"), bytes, 0644)
+	}
+	run(localDir, "git", "add", ".gitignore")
+	run(localDir, "git", "commit", "-m", "Adding gitignore.")
 	run(localDir, "git", "tag", "v1.0.0")
 	run(localDir, "git", "checkout", "-b", "feature", "master")
-	run(localDir, "git", "push", "origin", "feature", "v1.0.0")
+	run(localDir, "git", "push", "origin", "master", "feature", "v1.0.0")
 
 	return remoteDir, clean
 }
