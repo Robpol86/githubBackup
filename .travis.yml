@@ -6,7 +6,7 @@ sudo: required
 # Run.
 install:
   - make install
-  - vendor/github.com/libgit2/git2go/script/install-libgit2.sh
+  - vendor/github.com/libgit2/git2go/script/install-libgit2.sh > /dev/null
 script: make
 after_success:
   - go get -u github.com/mattn/goveralls
