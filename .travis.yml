@@ -2,12 +2,13 @@
 addons:
   apt:
     sources:
-      - git-core
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ xenial main restricted universe
     packages:
       libgit2-dev
+dist: trusty
 language: go
 go: 1.7
-sudo: false
+sudo: required
 
 # Run.
 install:
