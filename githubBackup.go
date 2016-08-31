@@ -19,8 +19,8 @@ func init() {
 		Authors: []*cli.Author{
 			{Name: "Robpol86", Email: "robpol86@gmail.com"},
 		},
-		Flags: flags,
-		Usage: usage,
+		Flags:   flags,
+		Usage:   usage,
 		Version: version,
 	}
 	app.Run(os.Args)

@@ -24,7 +24,7 @@ $(README_PARSED_FILE): USAGE = $(shell grep "^\w.*\.$$" README.rst |head -1)
 $(README_PARSED_FILE): VERSION = $(shell grep -oP '^\d+\.\d+\.\d+(?= - \d{4}-\d{2}-\d{2}$$)' README.rst |head -1)
 $(README_PARSED_FILE):
 	@echo "package main\n\nconst (" > $(README_PARSED_FILE)
-	@echo "\tusage = \"$(USAGE)\"" >> $(README_PARSED_FILE)
+	@echo "\tusage   = \"$(USAGE)\"" >> $(README_PARSED_FILE)
 	@echo "\tversion = \"$(VERSION)\"" >> $(README_PARSED_FILE)
 	@echo ")" >> $(README_PARSED_FILE)
 
@@ -48,7 +48,7 @@ lint: $(GOPATH)/bin/golint $(README_PARSED_FILE)
 	@echo "Running go vet"
 	go vet $(ALL_PKGS)
 	@echo "Checking gofmt"
-	gofmt -l $(ALL_FILES)
+	gofmt -l $(ALL_FILES) |(! grep '.')
 
 
 test: vendor
