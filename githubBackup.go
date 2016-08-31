@@ -10,15 +10,13 @@ import (
 // init just handles CLI parsing and populating the GlobalConfig.
 func init() {
 	flags := []cli.Flag{
-		&cli.BoolFlag{Name: "quiet", Usage: "Don't print to terminal."},
-		&cli.BoolFlag{Name: "verbose", Usage: "Debug output to terminal."},
-		&cli.StringFlag{Name: "log", Usage: "Write debug output to log file."},
+		&cli.BoolFlag{Name: "quiet", Usage: "don't print to terminal."},
+		&cli.BoolFlag{Name: "verbose", Usage: "debug output to terminal."},
+		&cli.StringFlag{Name: "log", Usage: "write debug output to log file."},
 	}
 	app := &cli.App{
-		Action: GlobalConfig.FromCLI,
-		Authors: []*cli.Author{
-			{Name: "Robpol86", Email: "robpol86@gmail.com"},
-		},
+		Action:  GlobalConfig.FromCLI,
+		Authors: []*cli.Author{{Name: "Robpol86", Email: "robpol86@gmail.com"}},
 		Flags:   flags,
 		Usage:   usage,
 		Version: version,
