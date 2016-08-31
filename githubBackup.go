@@ -18,10 +18,7 @@ func init() {
 		}}
 
 	app := &cli.App{
-		Action: func (c *cli.Context) error {
-			log.Info("Hello from cli.")
-			return nil
-		},
+		Action: GlobalConfig.FromCLI,
 		Flags: flags,
 	}
 
@@ -33,4 +30,6 @@ func main() {
 	log.Info("Info.")
 	log.Warn("Warn.")
 	log.Error("Error.")
+
+	log.Infof("Verbose level: %d", GlobalConfig.Verbose)
 }

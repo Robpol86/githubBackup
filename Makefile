@@ -24,7 +24,7 @@ vendor install: $(GOPATH)/bin/glide
 
 
 $(PROG): vendor
-	go build -o $(PROG) $(PROG).go
+	go build -o $(PROG) $(ALL_PKGS)
 
 
 fmt:
