@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	log "github.com/Sirupsen/logrus"
+)
 
 func main() {
-	fmt.Println("Hello World.")
+	log.Debug("Debug.")
+	log.Info("Info.")
+	log.Warn("Warn.")
+	log.Error("Error.")
 }
