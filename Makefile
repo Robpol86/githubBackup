@@ -2,8 +2,8 @@
 ALL_FILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 ALL_PKGS = $(shell glide nv)
 PROG := $(shell basename $(CURDIR))
+USAGE := TODO
 VERSION := 0.0.1
-LDFLAGS := -X main.Version=$(VERSION)
 
 
 all: clean lint build
@@ -25,6 +25,7 @@ vendor install: $(GOPATH)/bin/glide
 	glide up
 
 
+$(PROG): LDFLAGS := -X main._version=$(VERSION) -X main._usage=$(USAGE)
 $(PROG): vendor
 	go build -o $(PROG) -ldflags "$(LDFLAGS)" $(ALL_PKGS)
 

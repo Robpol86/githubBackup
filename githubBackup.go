@@ -7,7 +7,8 @@ import (
 	"gopkg.in/urfave/cli.v2"
 )
 
-var Version = "" // Defined by linker.
+var _usage string // Set by ldflags.
+var _version string // Set by ldflags.
 
 // init just handles CLI parsing and populating the GlobalConfig.
 func init() {
@@ -16,7 +17,15 @@ func init() {
 		&cli.BoolFlag{Name: "verbose", Usage: "Debug output to terminal."},
 		&cli.StringFlag{Name: "log", Usage: "Write debug output to log file."},
 	}
-	app := &cli.App{Action: GlobalConfig.FromCLI, Flags: flags, Version: Version}
+	app := &cli.App{
+		Action: GlobalConfig.FromCLI,
+		Authors: []*cli.Author{
+			{Name: "Robpol86", Email: "robpol86@gmail.com"},
+		},
+		Flags: flags,
+		Usage: _usage,
+		Version: _version,
+	}
 	app.Run(os.Args)
 }
 
