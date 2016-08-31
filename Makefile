@@ -57,4 +57,3 @@ test: vendor
 
 build: test $(PROG)
 	./$(PROG)
-	./$(PROG) --help

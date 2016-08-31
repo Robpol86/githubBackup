@@ -43,7 +43,7 @@ func all(ctx *cli.Context) error {
 
 func main() {
 	app := &cli.App{
-		Action:  GlobalConfig.FromCLI,
+		Before:  GlobalConfig.FromCLI,
 		Usage:   usage,
 		Version: version,
 	}
