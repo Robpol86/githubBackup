@@ -20,7 +20,7 @@ $(GOPATH)/bin/glide:
 	go get -u github.com/Masterminds/glide
 
 
-$(README_PARSED_FILE): USAGE = TODO
+$(README_PARSED_FILE): USAGE = $(shell grep "^\w.*\.$$" README.rst |head -1)
 $(README_PARSED_FILE): VERSION = 0.0.1
 $(README_PARSED_FILE):
 	@echo "package main\n\nconst (" > $(README_PARSED_FILE)
