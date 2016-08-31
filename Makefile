@@ -21,7 +21,7 @@ $(GOPATH)/bin/glide:
 
 
 $(README_PARSED_FILE): USAGE = $(shell grep "^\w.*\.$$" README.rst |head -1)
-$(README_PARSED_FILE): VERSION = 0.0.1
+$(README_PARSED_FILE): VERSION = $(shell grep -oP '^\d+\.\d+\.\d+(?= - \d{4}-\d{2}-\d{2}$$)' README.rst |head -1)
 $(README_PARSED_FILE):
 	@echo "package main\n\nconst (" > $(README_PARSED_FILE)
 	@echo "\tusage = \"$(USAGE)\"" >> $(README_PARSED_FILE)
