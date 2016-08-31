@@ -24,7 +24,8 @@ _testmain.go
 *.prof
 
 # Robpol86
-vendor/
 *.rpm
 .idea/
+gen_readme_parsed.go
 githubBackup
+vendor/
