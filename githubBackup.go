@@ -7,9 +7,6 @@ import (
 	"gopkg.in/urfave/cli.v2"
 )
 
-var _usage string // Set by ldflags.
-var _version string // Set by ldflags.
-
 // init just handles CLI parsing and populating the GlobalConfig.
 func init() {
 	flags := []cli.Flag{
@@ -23,8 +20,8 @@ func init() {
 			{Name: "Robpol86", Email: "robpol86@gmail.com"},
 		},
 		Flags: flags,
-		Usage: _usage,
-		Version: _version,
+		Usage: usage,
+		Version: version,
 	}
 	app.Run(os.Args)
 }

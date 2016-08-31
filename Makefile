@@ -2,15 +2,14 @@
 ALL_FILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 ALL_PKGS = $(shell glide nv)
 PROG := $(shell basename $(CURDIR))
-USAGE := TODO
-VERSION := 0.0.1
+README_PARSED_FILE := gen_readme_parsed.go
 
 
 all: clean lint build
 
 
 clean:
-	rm -f $(PROG)
+	rm -f $(PROG) $(README_PARSED_FILE)
 
 
 $(GOPATH)/bin/golint:
@@ -21,13 +20,21 @@ $(GOPATH)/bin/glide:
 	go get -u github.com/Masterminds/glide
 
 
+$(README_PARSED_FILE): USAGE = TODO
+$(README_PARSED_FILE): VERSION = 0.0.1
+$(README_PARSED_FILE):
+	@echo "package main\n\nconst (" > $(README_PARSED_FILE)
+	@echo "\tusage = \"$(USAGE)\"" >> $(README_PARSED_FILE)
+	@echo "\tversion = \"$(VERSION)\"" >> $(README_PARSED_FILE)
+	@echo ")" >> $(README_PARSED_FILE)
+
+
 vendor install: $(GOPATH)/bin/glide
 	glide up
 
 
-$(PROG): LDFLAGS := -X main._version=$(VERSION) -X main._usage=$(USAGE)
-$(PROG): vendor
-	go build -o $(PROG) -ldflags "$(LDFLAGS)" $(ALL_PKGS)
+$(PROG): vendor $(README_PARSED_FILE)
+	go build -o $(PROG) $(ALL_PKGS)
 
 
 fmt:
@@ -35,7 +42,7 @@ fmt:
 	go fmt $(ALL_FILES)
 
 
-lint: $(GOPATH)/bin/golint
+lint: $(GOPATH)/bin/golint $(README_PARSED_FILE)
 	@echo "Running golint"
 	golint $(ALL_PKGS)
 	@echo "Running go vet"
