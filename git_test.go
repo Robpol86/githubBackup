@@ -76,6 +76,11 @@ func TestClone_NetworkError(t *testing.T) {
 	assert.NotEmpty("TODO") // TODO
 }
 
+func TestClone_AuthError(t *testing.T) {
+	assert := require.New(t)
+	assert.NotEmpty("TODO") // TODO
+}
+
 func TestClone_RepoDoesntExist(t *testing.T) {
 	assert := require.New(t)
 	dir, clean := gitRemoteRepo("doesn't exist")
