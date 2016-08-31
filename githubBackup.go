@@ -56,9 +56,9 @@ func main() {
 		&cli.StringFlag{Name: "log", Usage: "write debug output to log file."},
 	}
 	app.Commands = []*cli.Command{
-		{Name: "github", Action: github},
-		{Name: "gist", Action: gist},
-		{Name: "all", Action: all},
+		{Name: "github", Action: github, Usage: "Backup only GitHub repositories."},
+		{Name: "gist", Action: gist, Usage: "Backup only GitHub Gists."},
+		{Name: "all", Action: all, Usage: "Backup both GitHub repos and Gists."},
 	}
 	if err := app.Run(os.Args); err != nil {
 		os.Exit(1)
