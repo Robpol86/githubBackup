@@ -32,19 +32,18 @@ func gist(ctx *cli.Context) error {
 }
 
 func main() {
-	flags := []cli.Flag{
-		&cli.BoolFlag{Name: "quiet", Usage: "don't print to terminal."},
-		&cli.BoolFlag{Name: "verbose", Usage: "debug output to terminal."},
-		&cli.StringFlag{Name: "log", Usage: "write debug output to log file."},
-	}
 	app := &cli.App{
 		Action:  GlobalConfig.FromCLI,
-		Flags:   flags,
 		Usage:   usage,
 		Version: version,
 	}
 	app.Authors = []*cli.Author{
 		{Name: "Robpol86", Email: "robpol86@gmail.com"},
+	}
+	app.Flags = []cli.Flag{
+		&cli.BoolFlag{Name: "quiet", Usage: "don't print to terminal."},
+		&cli.BoolFlag{Name: "verbose", Usage: "debug output to terminal."},
+		&cli.StringFlag{Name: "log", Usage: "write debug output to log file."},
 	}
 	app.Commands = []*cli.Command{
 		{Name: "github", Action: github},
