@@ -31,6 +31,16 @@ func gist(ctx *cli.Context) error {
 	return nil
 }
 
+func all(ctx *cli.Context) error {
+	if err := github(ctx); err != nil {
+		return err
+	}
+	if err := gist(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
 func main() {
 	app := &cli.App{
 		Action:  GlobalConfig.FromCLI,
@@ -48,6 +58,7 @@ func main() {
 	app.Commands = []*cli.Command{
 		{Name: "github", Action: github},
 		{Name: "gist", Action: gist},
+		{Name: "all", Action: all},
 	}
 	if err := app.Run(os.Args); err != nil {
 		os.Exit(1)
