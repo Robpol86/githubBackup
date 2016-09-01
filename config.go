@@ -27,13 +27,13 @@ func (c *Config) FromCLI(ctx *cli.Context) error {
 	return nil
 }
 
-// Finalize sets remaining nil pointers to empty values.
+// Finalize resolves remaining nil pointers to empty *values.
 func (c *Config) Finalize() {
 	emptyBool := false
 	emptyString := ""
-	ptr := reflect.ValueOf(c).Elem()
-	for i := 0; i < ptr.NumField(); i++ {
-		field := ptr.Field(i)
+	structValue := reflect.ValueOf(c).Elem()
+	for i := 0; i < structValue.NumField(); i++ {
+		field := structValue.Field(i)
 		if !field.IsNil() {
 			continue
 		}
