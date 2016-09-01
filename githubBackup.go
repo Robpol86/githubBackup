@@ -42,6 +42,7 @@ func main() {
 
 	// Global properties.
 	app.Before = GlobalConfig.FromCLI
+	app.Name = "githubBackup"
 	app.Usage = usage
 	app.Version = version
 	app.Authors = []cli.Author{
@@ -50,7 +51,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{Name: "log, l", Usage: "write debug output to log file."},
 		&cli.BoolFlag{Name: "quiet, q", Usage: "don't print to terminal."},
-		&cli.StringFlag{Name: "target, t", Usage: "create sub directories in this dir (default: ./ghbackup)."},
+		&cli.StringFlag{Name: "target, t", Usage: "create sub directories here (default: ./ghbackup)."},
 		&cli.StringFlag{Name: "user, u", Usage: "use this GitHub username instead of auto detecting."},
 		&cli.BoolFlag{Name: "verbose, V", Usage: "debug output to terminal."},
 	}
@@ -61,6 +62,8 @@ func main() {
 		{Name: "gist", Action: gist, Usage: "Backup only GitHub Gists.", ArgsUsage: " "},
 		{Name: "all", Action: all, Usage: "Backup both GitHub repos and Gists.", ArgsUsage: " "},
 	}
+
+	// Run. Exit 1 if user has bad arguments.
 	if err := app.Run(os.Args); err != nil {
 		os.Exit(1)
 	}
