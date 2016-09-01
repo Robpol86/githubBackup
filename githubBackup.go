@@ -51,9 +51,9 @@ func main() {
 		{Name: "Robpol86", Email: "robpol86@gmail.com"},
 	}
 	app.Flags = []cli.Flag{
-		&cli.BoolFlag{Name: "quiet", Usage: "don't print to terminal."},
-		&cli.BoolFlag{Name: "verbose", Usage: "debug output to terminal."},
-		&cli.StringFlag{Name: "log", Usage: "write debug output to log file."},
+		&cli.StringFlag{Name: "log", Aliases: []string{"l"}, Usage: "write debug output to log file."},
+		&cli.BoolFlag{Name: "quiet", Aliases: []string{"q"}, Usage: "don't print to terminal."},
+		&cli.BoolFlag{Name: "verbose", Aliases: []string{"V"}, Usage: "debug output to terminal."},
 	}
 	app.Commands = []*cli.Command{
 		{Name: "github", Action: github, Usage: "Backup only GitHub repositories."},
