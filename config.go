@@ -1,48 +1,34 @@
 package main
 
 import (
-	"reflect"
-
 	"github.com/urfave/cli"
 )
 
 // Config defines the application configuration.
 type Config struct {
-	LogFile *string `cli:"log"`
-	Quiet   *bool   `cli:"quiet"`
-	Verbose *bool   `cli:"verbose"`
+	LogFile   string
+	Quiet     bool
+	TargetDir string
+	Username  string
+	Verbose   bool
 }
 
 // FromCLI is passed to cli.App{} in the Action field. It populates the GlobalConfig.
 func (c *Config) FromCLI(ctx *cli.Context) error {
-	if s := ctx.String("log"); c.LogFile == nil {
-		c.LogFile = &s
+	c.LogFile = ctx.String("log")
+	c.Quiet = ctx.Bool("quiet")
+	c.TargetDir = ctx.String("target")
+	c.Username = ctx.String("user")
+	c.Verbose = ctx.Bool("verbose")
+
+	// Set defaults.
+	if c.TargetDir == "" {
+		c.TargetDir = "ghbackup"
 	}
-	if b := ctx.Bool("quiet"); c.Quiet == nil {
-		c.Quiet = &b
-	}
-	if b := ctx.Bool("verbose"); c.Verbose == nil {
-		c.Verbose = &b
+	if c.Username == "" {
+		c.Username = "TODO"
 	}
 	return nil
-}
-
-// Finalize resolves remaining nil pointers to empty *values.
-func (c *Config) Finalize() {
-	emptyBool := false
-	emptyString := ""
-	structValue := reflect.ValueOf(c).Elem()
-	for i := 0; i < structValue.NumField(); i++ {
-		field := structValue.Field(i)
-		if !field.IsNil() {
-			continue
-		}
-		if field.Type() == reflect.TypeOf(&emptyBool) {
-			field.Set(reflect.ValueOf(&emptyBool))
-		} else if field.Type() == reflect.TypeOf(&emptyString) {
-			field.Set(reflect.ValueOf(&emptyString))
-		}
-	}
 }
 
 // GlobalConfig will hold the config values for the entire application during runtime.
