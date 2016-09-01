@@ -7,6 +7,15 @@ import (
 	"github.com/urfave/cli"
 )
 
+const longUsage = `
+
+   Clone all of your public and private repos into individual local
+   directories. Does a mirror clone so all branches and tags are fully cloned.
+
+   Also downloads all of your GitHub Issues and Wiki pages, along with all of
+   your GitHub Gists. Each Gist is its own Git repo so each one will be cloned
+   to their own individual directory locally.`
+
 func github(ctx *cli.Context) error {
 	fmt.Println("Hello World")
 	fmt.Printf("LogFile: %s\n", GlobalConfig.LogFile)
@@ -42,10 +51,10 @@ func main() {
 
 	// Global properties.
 	app.Before = GlobalConfig.FromCLI
-	app.Usage = usage
+	app.Usage = usage + longUsage
 	app.Version = version
 	app.Authors = []cli.Author{
-		{"Robpol86", "robpol86@gmail.com"},
+		{Name: "Robpol86", Email: "robpol86@gmail.com"},
 	}
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{Name: "log, l", Usage: "write debug output to log file."},
