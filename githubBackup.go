@@ -16,7 +16,7 @@ const longUsage = `
    your GitHub Gists. Each Gist is its own Git repo so each one will be cloned
    to their own individual directory locally.`
 
-func github(ctx *cli.Context) error {
+func github(_ *cli.Context) error {
 	fmt.Println("Hello World")
 	fmt.Printf("LogFile: %s\n", GlobalConfig.LogFile)
 	fmt.Printf("Quiet: %v\n", GlobalConfig.Quiet)
@@ -26,7 +26,7 @@ func github(ctx *cli.Context) error {
 	return nil
 }
 
-func gist(ctx *cli.Context) error {
+func gist(_ *cli.Context) error {
 	fmt.Println("Hello World!")
 	fmt.Printf("LogFile: %s\n", GlobalConfig.LogFile)
 	fmt.Printf("Quiet: %v\n", GlobalConfig.Quiet)
