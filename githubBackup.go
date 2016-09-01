@@ -13,9 +13,9 @@ func github(ctx *cli.Context) error {
 	log.Warn("Warn.")
 	log.Error("Error.")
 
-	log.Infof("LogFile: %s", GlobalConfig.LogFile)
-	log.Infof("Quiet: %v", GlobalConfig.Quiet)
-	log.Infof("Verbose: %v", GlobalConfig.Verbose)
+	log.Infof("LogFile: %s", &GlobalConfig.LogFile)
+	log.Infof("Quiet: %v", &GlobalConfig.Quiet)
+	log.Infof("Verbose: %v", &GlobalConfig.Verbose)
 	return nil
 }
 
@@ -25,9 +25,9 @@ func gist(ctx *cli.Context) error {
 	log.Warn("Warn!")
 	log.Error("Error!")
 
-	log.Infof("LogFile: %s", GlobalConfig.LogFile)
-	log.Infof("Quiet: %v", GlobalConfig.Quiet)
-	log.Infof("Verbose: %v", GlobalConfig.Verbose)
+	log.Infof("LogFile: %s", &GlobalConfig.LogFile)
+	log.Infof("Quiet: %v", &GlobalConfig.Quiet)
+	log.Infof("Verbose: %v", &GlobalConfig.Verbose)
 	return nil
 }
 
