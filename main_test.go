@@ -12,9 +12,14 @@ import (
 )
 
 // From http://stackoverflow.com/questions/10473800/in-go-how-do-i-capture-stdout-of-a-function-into-a-string
-func withStdoutRedir(function func()) (*string, error) {
+func withStdoutRedir(args []string) (*string, error) {
 	var output string
 	stdout := make(chan string)
+
+	// Replace args.
+	oldArgs := os.Args
+	os.Args = args
+	defer func() { os.Args = oldArgs }()
 
 	// Replace stream.
 	old := os.Stdout
@@ -37,21 +42,29 @@ func withStdoutRedir(function func()) (*string, error) {
 		stdout <- buf.String()
 	}()
 
-	// Run the caller's function.
-	function()
+	// Run the main function.
+	main()
 
 	return &output, nil
 }
 
 func TestMain_HelpLineLength(t *testing.T) {
 	assert := require.New(t)
+	allArgs := [][]string{
+		{"githubBackup", "--help"},
+		{"githubBackup", "gist", "--help"},
+		{"githubBackup", "github", "--help"},
+		{"githubBackup", "all", "--help"},
+	}
 
-	// Run global --help.
-	output, err := withStdoutRedir(main)
-	assert.NoError(err)
-	assert.Contains(*output, "GLOBAL OPTIONS")
-	for _, line := range strings.Split(*output, "\n") {
-		truncated := fmt.Sprintf("%.80s", line)
-		assert.Equal(truncated, line)
+	for _, args := range allArgs {
+		output, err := withStdoutRedir(args)
+		assert.NoError(err)
+		assert.Contains(*output, "githubBackup")
+		assert.Contains(*output, "USAGE")
+		for _, line := range strings.Split(*output, "\n") {
+			truncated := fmt.Sprintf("%.80s", line)
+			assert.Equal(truncated, line)
+		}
 	}
 }

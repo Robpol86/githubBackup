@@ -42,7 +42,6 @@ func main() {
 
 	// Global properties.
 	app.Before = GlobalConfig.FromCLI
-	app.Name = "githubBackup"
 	app.Usage = usage
 	app.Version = version
 	app.Authors = []cli.Author{
