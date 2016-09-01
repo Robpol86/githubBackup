@@ -52,7 +52,7 @@ lint: $(GOPATH)/bin/golint $(README_PARSED_FILE)
 
 
 test: vendor
-	go test $(ALL_PKGS)
+	go test -cover $(ALL_PKGS)
 
 
 build: test $(PROG)
