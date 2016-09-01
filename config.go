@@ -29,13 +29,18 @@ func (c *Config) FromCLI(ctx *cli.Context) error {
 
 // Finalize sets remaining nil pointers to empty values.
 func (c *Config) Finalize() {
-	//emptyBool := false
-	//emptyStr := ""
+	emptyBool := false
+	emptyString := ""
 	ptr := reflect.ValueOf(c).Elem()
 	for i := 0; i < ptr.NumField(); i++ {
 		field := ptr.Field(i)
 		if !field.IsNil() {
 			continue
+		}
+		if field.Type() == reflect.TypeOf(&emptyBool) {
+			field.Set(reflect.ValueOf(&emptyBool))
+		} else if field.Type() == reflect.TypeOf(&emptyString) {
+			field.Set(reflect.ValueOf(&emptyString))
 		}
 	}
 }
