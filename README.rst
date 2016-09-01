@@ -2,7 +2,7 @@
 githubBackup
 ============
 
-Backups all of your GitHub public/private repos (with issues/wikis) and Gists.
+Backup all of your GitHub repos (with issues/wikis) and Gists.
 
 * Golang 1.7 supported on Linux and OS X.
 

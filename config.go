@@ -3,7 +3,7 @@ package main
 import (
 	"reflect"
 
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli"
 )
 
 // Config defines the application configuration.
