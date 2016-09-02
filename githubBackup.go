@@ -50,7 +50,7 @@ func main() {
 	app := cli.NewApp()
 
 	// Global properties.
-	app.Before = GlobalConfig.FromCLI
+	app.Before = GlobalConfig.FromCLIGlobal
 	app.Usage = usage + longUsage
 	app.Version = version
 	app.Authors = []cli.Author{
@@ -60,15 +60,29 @@ func main() {
 		&cli.StringFlag{Name: "log, l", Usage: "write debug output to log file."},
 		&cli.BoolFlag{Name: "quiet, q", Usage: "don't print to terminal."},
 		&cli.StringFlag{Name: "target, t", Usage: "create sub directories here (default: ./ghbackup)."},
-		&cli.StringFlag{Name: "user, u", Usage: "use this GitHub username instead of auto detecting."},
 		&cli.BoolFlag{Name: "verbose, V", Usage: "debug output to terminal."},
 	}
 
 	// Sub commands.
 	app.Commands = []cli.Command{
-		{Name: "github", Action: github, Usage: "Backup only GitHub repositories.", ArgsUsage: " "},
-		{Name: "gist", Action: gist, Usage: "Backup only GitHub Gists.", ArgsUsage: " "},
-		{Name: "all", Action: all, Usage: "Backup both GitHub repos and Gists.", ArgsUsage: " "},
+		{
+			Name:      "github",
+			Action:    github,
+			Usage:     "Backup only GitHub repositories.",
+			ArgsUsage: "USERNAME", Before: GlobalConfig.FromCLISub,
+		},
+		{
+			Name:      "gist",
+			Action:    gist,
+			Usage:     "Backup only GitHub Gists.",
+			ArgsUsage: "USERNAME", Before: GlobalConfig.FromCLISub,
+		},
+		{
+			Name:      "all",
+			Action:    all,
+			Usage:     "Backup both GitHub repos and Gists.",
+			ArgsUsage: "USERNAME", Before: GlobalConfig.FromCLISub,
+		},
 	}
 
 	// Run. Exit 1 if user has bad arguments.
