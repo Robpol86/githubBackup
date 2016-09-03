@@ -16,6 +16,10 @@ const longUsage = `
    your GitHub Gists. Each Gist is its own Git repo so each one will be cloned
    to their own individual directory locally.`
 
+const longUsageSub = `
+
+   USERNAME is your GitHub username.`
+
 func github(_ *cli.Context) error {
 	fmt.Println("Hello World")
 	fmt.Printf("LogFile: %s\n", GlobalConfig.LogFile)
@@ -68,19 +72,19 @@ func main() {
 		{
 			Name:      "github",
 			Action:    github,
-			Usage:     "Backup only GitHub repositories.",
+			Usage:     "Backup only GitHub repositories." + longUsageSub,
 			ArgsUsage: "USERNAME", Before: GlobalConfig.FromCLISub,
 		},
 		{
 			Name:      "gist",
 			Action:    gist,
-			Usage:     "Backup only GitHub Gists.",
+			Usage:     "Backup only GitHub Gists." + longUsageSub,
 			ArgsUsage: "USERNAME", Before: GlobalConfig.FromCLISub,
 		},
 		{
 			Name:      "all",
 			Action:    all,
-			Usage:     "Backup both GitHub repos and Gists.",
+			Usage:     "Backup both GitHub repos and Gists." + longUsageSub,
 			ArgsUsage: "USERNAME", Before: GlobalConfig.FromCLISub,
 		},
 	}
