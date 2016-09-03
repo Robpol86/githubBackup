@@ -1,8 +1,13 @@
 package main
 
 import (
+	"errors"
+	"regexp"
+
 	"github.com/urfave/cli"
 )
+
+var _usernameRE = regexp.MustCompile("^[a-zA-Z0-9_.-]+$")
 
 // Config defines the application configuration.
 type Config struct {
@@ -13,20 +18,35 @@ type Config struct {
 	Verbose   bool
 }
 
-// FromCLI is passed to cli.App{} in the Action field. It populates the GlobalConfig.
-func (c *Config) FromCLI(ctx *cli.Context) error {
+// FromCLIGlobal is called by urfave/cli before the main command runs.
+func (c *Config) FromCLIGlobal(ctx *cli.Context) error {
 	c.LogFile = ctx.String("log")
 	c.Quiet = ctx.Bool("quiet")
 	c.TargetDir = ctx.String("target")
-	c.Username = ctx.String("user")
 	c.Verbose = ctx.Bool("verbose")
 
 	// Set defaults.
 	if c.TargetDir == "" {
 		c.TargetDir = "ghbackup"
 	}
+	return nil
+}
+
+// FromCLISub is called by urfave/cli before the github/gist/all sub command runs.
+func (c *Config) FromCLISub(ctx *cli.Context) error {
+	if ctx.NArg() < 1 {
+		return errors.New("Error: Missing argument \"USERNAME\"")
+	}
+	c.Username = ctx.Args().Get(0)
+
+	// Set defaults.
 	if c.Username == "" {
 		c.Username = "TODO"
+	}
+
+	// Validate.
+	if !_usernameRE.MatchString(c.Username) {
+		return errors.New("Error: Invalid value for USERNAME.")
 	}
 	return nil
 }
