@@ -4,25 +4,37 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/urfave/cli"
 )
+
+type MockContext struct {
+	answers map[string]interface{}
+}
+
+func (m MockContext) Bool(key string) bool {
+	return m.answers[key].(bool)
+}
+
+func (m MockContext) String(key string) string {
+	return m.answers[key].(string)
+}
 
 func TestConfig_FromCLIGlobal_Defaults(t *testing.T) {
 	assert := require.New(t)
+	ctx := MockContext{map[string]interface{}{
+		"log":     "",
+		"quiet":   false,
+		"target":  "",
+		"verbose": false,
+	}}
 	config := Config{}
-
-	// Setup context.
-	answers := map[string]interface{}{"target": ""}
-	ctx := cli.Context{}
-	ctx.String = func(key string) string { return answers[key].(string) }
 
 	// Run: set default.
 	config.FromCLIGlobal(ctx)
 	assert.Equal("ghbackup", config.TargetDir)
 
 	// Run: user defined.
-	config = nil
-	answers["target"] = "~/backup"
+	config = Config{}
+	ctx.answers["target"] = "~/backup"
 	config.FromCLIGlobal(ctx)
 	assert.Equal("~/backup", config.TargetDir)
 }

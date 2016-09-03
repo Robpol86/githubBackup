@@ -18,8 +18,13 @@ type Config struct {
 	Verbose   bool
 }
 
+type context interface {
+	Bool(string) bool
+	String(string) string
+}
+
 // FromCLIGlobal is called by urfave/cli before the main command runs.
-func (c *Config) FromCLIGlobal(ctx *cli.Context) error {
+func (c *Config) FromCLIGlobal(ctx context) error {
 	c.LogFile = ctx.String("log")
 	c.Quiet = ctx.Bool("quiet")
 	c.TargetDir = ctx.String("target")

@@ -54,7 +54,7 @@ func main() {
 	app := cli.NewApp()
 
 	// Global properties.
-	app.Before = GlobalConfig.FromCLIGlobal
+	app.Before = func(ctx *cli.Context) error { return GlobalConfig.FromCLIGlobal(ctx) }
 	app.Usage = usage + longUsage
 	app.Version = version
 	app.Authors = []cli.Author{
