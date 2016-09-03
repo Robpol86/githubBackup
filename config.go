@@ -2,9 +2,12 @@ package main
 
 import (
 	"errors"
+	"regexp"
 
 	"github.com/urfave/cli"
 )
+
+var _usernameRE = regexp.MustCompile("^[a-zA-Z0-9_.-]+$")
 
 // Config defines the application configuration.
 type Config struct {
@@ -36,8 +39,14 @@ func (c *Config) FromCLISub(ctx *cli.Context) error {
 	}
 	c.Username = ctx.Args().Get(0)
 
+	// Set defaults.
 	if c.Username == "" {
 		c.Username = "TODO"
+	}
+
+	// Validate.
+	if !_usernameRE.MatchString(c.Username) {
+		return errors.New("Error: Invalid value for USERNAME.")
 	}
 	return nil
 }
