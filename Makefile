@@ -1,4 +1,4 @@
-.PHONY: all fmt lint build
+.PHONY: all fmt lint build install
 ALL_FILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 ALL_PKGS = $(shell glide nv)
 PROG := $(shell grep "^[^=]" README.rst |head -1)
@@ -19,7 +19,13 @@ lint: $(GOPATH)/bin/golint
 	@echo "Checking gofmt"
 	gofmt -l $(ALL_FILES) |(! grep '.')
 
-$(PROG):
+$(GOPATH)/bin/glide:
+	go get -u github.com/Masterminds/glide
+
+install vendor: $(GOPATH)/bin/glide
+	glide up
+
+$(PROG): vendor
 	go build -o $(PROG) $(ALL_PKGS)
 
 build: $(PROG) test
