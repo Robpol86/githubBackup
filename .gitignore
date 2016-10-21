@@ -27,5 +27,6 @@ _testmain.go
 *.rpm
 .DS_Store
 .idea/
+cover.out
 githubBackup
 vendor/

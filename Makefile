@@ -32,7 +32,7 @@ build: $(PROG) test
 	./$(PROG)
 
 test: vendor
-	go test -cover $(ALL_PKGS)
+	go test -coverprofile cover.out -cover $(ALL_PKGS)
 
 fmt:
 	@echo Formatting Packages...

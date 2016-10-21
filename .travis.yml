@@ -1,0 +1,11 @@
+# Configure.
+language: go
+go:
+  - 1.7
+sudo: false
+
+# Run.
+install: make install
+script: make
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
