@@ -1,9 +1,11 @@
-.PHONY: all fmt lint build install
+.PHONY: all build clean fmt install lint test
 ALL_FILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
-ALL_PKGS = $(shell glide nv)
+ALL_PKGS := $(shell glide nv)
 PROG := $(shell grep "^[^=]" README.rst |head -1)
+VERSION := $(shell grep -oP '^\d+\.\d+\.\d+(?= - \d{4}-\d{2}-\d{2}$$)' README.rst |head -1)
+LDFLAGS := -X main.version=$(VERSION)
 
-all: clean lint build
+all: clean lint test build
 
 clean:
 	rm -f $(PROG)
@@ -25,14 +27,14 @@ $(GOPATH)/bin/glide:
 install vendor: $(GOPATH)/bin/glide
 	glide up
 
-$(PROG): vendor
-	go build -o $(PROG) $(ALL_PKGS)
-
-build: $(PROG) test
-	./$(PROG)
-
 test: vendor
 	go test -coverprofile cover.out -cover $(ALL_PKGS)
+
+$(PROG): vendor
+	go build -ldflags "$(LDFLAGS)" -o $(PROG) $(ALL_PKGS)
+
+build: $(PROG)
+	./$(PROG)
 
 fmt:
 	@echo Formatting Packages...
