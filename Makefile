@@ -2,8 +2,6 @@
 ALL_FILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 ALL_PKGS := $(shell glide nv)
 PROG := $(shell grep "^[^=]" README.rst |head -1)
-VERSION := $(shell grep -oP '^\d+\.\d+\.\d+(?= - \d{4}-\d{2}-\d{2}$$)' README.rst |head -1)
-LDFLAGS := -X main.version=$(VERSION)
 
 all: clean lint test build
 
@@ -31,10 +29,10 @@ test: vendor
 	go test -coverprofile cover.out -cover $(ALL_PKGS)
 
 $(PROG): vendor
-	go build -ldflags "$(LDFLAGS)" -o $(PROG) $(ALL_PKGS)
+	go build -o $(PROG) $(ALL_PKGS)
 
 build: $(PROG)
-	./$(PROG)
+	./$(PROG) --help
 
 fmt:
 	@echo Formatting Packages...

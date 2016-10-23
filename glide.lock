@@ -1,6 +1,19 @@
-hash: 7f93acdd6cd6d934b843244a37f2bd2e53346c8d9404e1bd4682107ef61aaf19
-updated: 2016-10-19T19:06:25.901281854-07:00
+hash: 718df06917f3899446ef12469851cf06a7e851f25f537770ca11f03229239158
+updated: 2016-10-22T20:04:07.322730982-07:00
 imports:
+- name: github.com/docopt/docopt-go
+  version: 784ddc588536785e7299f7272f39101f7faccc3f
 - name: github.com/stretchr/testify
   version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
-testImports: []
+  subpackages:
+  - assert
+  - require
+testImports:
+- name: github.com/davecgh/go-spew
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
