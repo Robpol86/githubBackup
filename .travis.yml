@@ -5,7 +5,7 @@ go:
 sudo: false
 
 # Run.
-install: make install
+install: make bootstrap
 script: make
 after_success:
   - bash <(curl -s https://codecov.io/bash)

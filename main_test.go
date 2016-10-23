@@ -49,7 +49,7 @@ func withCapSys(function func()) (string, string, error) {
 	return stdout, stderr, nil
 }
 
-func TestMainVersion(t *testing.T) {
+func TestMainVersionConsistency(t *testing.T) {
 	assert := require.New(t)
 
 	// Open README file.
@@ -87,11 +87,24 @@ func TestMainVersion(t *testing.T) {
 	assert.Equal(readmeVersion, version)
 }
 
+func TestMainVersion(t *testing.T) {
+	assert := require.New(t)
+	stdout, stderr, err := withCapSys(func() {
+		err := Main([]string{"-V"}, false)
+		assert.NoError(err)
+	})
+	assert.NoError(err)
+	assert.Empty(stderr)
+	assert.Equal(version+"\n", stdout)
+}
+
 func TestMainNoArgs(t *testing.T) {
 	assert := require.New(t)
-	no_exit = true
-	stdout, stderr, err := withCapSys(main)
+	stdout, stderr, err := withCapSys(func() {
+		err := Main(nil, false)
+		assert.Error(err)
+	})
 	assert.NoError(err)
 	assert.Equal("Usage:", stderr[:6])
-	assert.Equal("Exiting.\n", stdout)
+	assert.Empty(stdout)
 }
