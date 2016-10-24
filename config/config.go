@@ -16,7 +16,7 @@ GitHub Gists. Each Gist is its own Git repo so each one will be cloned to their
 own individual directory locally.
 
 Usage:
-    githubBackup [options] DESTINATION
+    githubBackup [options] USERNAME DESTINATION
     githubBackup -h | --help
     githubBackup -V | --version
 
@@ -51,7 +51,7 @@ func parseBool(value interface{}) bool {
 
 // Config holds parsed data from command line arguments.
 type Config struct {
-	// TODO username? authentication?
+	Destination string
 	LogFile     string
 	NoGist      bool
 	NoIssues    bool
@@ -61,8 +61,8 @@ type Config struct {
 	NoWikis     bool
 	Overwrite   bool
 	Quiet       bool
+	Username    string
 	Verbose     bool
-	Destination string
 }
 
 // NewConfigFromCLI populates the struct with data read from command line arguments using docopt.
@@ -78,6 +78,7 @@ func NewConfigFromCLI(argv []string, version string, exitOk bool) (Config, error
 
 	// Populate struct.
 	config := Config{
+		Destination: parseString(parsed["DESTINATION"]),
 		LogFile:     parseString(parsed["--log"]),
 		NoGist:      parseBool(parsed["--no-gist"]),
 		NoIssues:    parseBool(parsed["--no-issues"]),
@@ -87,8 +88,8 @@ func NewConfigFromCLI(argv []string, version string, exitOk bool) (Config, error
 		NoWikis:     parseBool(parsed["--no-wikis"]),
 		Overwrite:   parseBool(parsed["--overwrite"]),
 		Quiet:       parseBool(parsed["--quiet"]),
+		Username:    parseString(parsed["USERNAME"]),
 		Verbose:     parseBool(parsed["--verbose"]),
-		Destination: parseString(parsed["DESTINATION"]),
 	}
 	return config, nil
 }
