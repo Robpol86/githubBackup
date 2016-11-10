@@ -1,4 +1,3 @@
-// Package config collects config data from command line arguments and stores it in a struct.
 package config
 
 import (

@@ -2,52 +2,14 @@ package main
 
 import (
 	"bufio"
-	"bytes"
-	"io"
 	"os"
 	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/Robpol86/githubBackup/testUtils"
 )
-
-func withCapSys(function func()) (string, string, error) {
-	var writeStdout *os.File
-	var writeStderr *os.File
-	chanStdout := make(chan string)
-	chanStderr := make(chan string)
-
-	// Prepare new streams.
-	if read, write, err := os.Pipe(); err == nil {
-		writeStdout = write
-		go func() { var buf bytes.Buffer; io.Copy(&buf, read); chanStdout <- buf.String() }()
-		if read, write, err := os.Pipe(); err == nil {
-			writeStderr = write
-			go func() { var buf bytes.Buffer; io.Copy(&buf, read); chanStderr <- buf.String() }()
-		} else {
-			return "", "", err
-		}
-	} else {
-		return "", "", err
-	}
-
-	// Patch streams.
-	oldStdout := os.Stdout
-	oldStderr := os.Stderr
-	defer func() { os.Stdout = oldStdout; os.Stderr = oldStderr }()
-	os.Stdout = writeStdout
-	os.Stderr = writeStderr
-
-	// Run.
-	function()
-
-	// Collect and return.
-	writeStdout.Close()
-	writeStderr.Close()
-	stdout := <-chanStdout
-	stderr := <-chanStderr
-	return stdout, stderr, nil
-}
 
 func TestMainVersionConsistency(t *testing.T) {
 	assert := require.New(t)
@@ -89,7 +51,7 @@ func TestMainVersionConsistency(t *testing.T) {
 
 func TestMainVersion(t *testing.T) {
 	assert := require.New(t)
-	stdout, stderr, err := withCapSys(func() {
+	stdout, stderr, err := testUtils.WithCapSys(func() {
 		err := Main([]string{"-V"}, false)
 		assert.NoError(err)
 	})
@@ -100,7 +62,7 @@ func TestMainVersion(t *testing.T) {
 
 func TestMainNoArgs(t *testing.T) {
 	assert := require.New(t)
-	stdout, stderr, err := withCapSys(func() {
+	stdout, stderr, err := testUtils.WithCapSys(func() {
 		err := Main(nil, false)
 		assert.Error(err)
 	})

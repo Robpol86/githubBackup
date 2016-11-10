@@ -4,7 +4,7 @@ githubBackup
 
 Backup all of your GitHub repos (with issues/wikis) and Gists.
 
-* Golang 1.7 supported on Linux, OS X, and Windows.
+* Tested with Golang 1.7 on Linux, OS X, and Windows.
 
 .. image:: https://img.shields.io/appveyor/ci/Robpol86/githubBackup/master.svg?style=flat-square&label=AppVeyor%20CI
     :target: https://ci.appveyor.com/project/Robpol86/githubBackup
@@ -25,7 +25,7 @@ Install:
 
 .. code:: bash
 
-    go get https://github.com/Robpol86/githubBackup
+    go get github.com/Robpol86/githubBackup
 
 Usage:
 
