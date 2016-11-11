@@ -64,11 +64,14 @@ type Config struct {
 	Verbose     bool
 }
 
-// NewConfigFromCLI populates the struct with data read from command line arguments using docopt.
+// NewConfig populates the struct with data read from command line arguments using docopt.
+//
 // :param argv: CLI arguments to pass to docopt.Parse().
+//
 // :param version: Version string to print on --version.
+//
 // :param exitOk: Passed to docopt.Parse(). If true docopt.Parse calls os.Exit() which aborts tests.
-func NewConfigFromCLI(argv []string, version string, exitOk bool) (Config, error) {
+func NewConfig(argv []string, version string, exitOk bool) (Config, error) {
 	// Parse CLI.
 	parsed, err := docopt.Parse(usage, argv, true, version, true, exitOk)
 	if err != nil {
