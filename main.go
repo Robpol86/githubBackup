@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/Robpol86/githubBackup/config"
 )
 
@@ -14,12 +12,16 @@ const version = "0.0.1"
 //
 // :param exitOk: Passed to docopt.Parse(). If true docopt.Parse calls os.Exit() which aborts tests.
 func Main(argv []string, exitOk bool) error {
+	// Initialize configuration.
 	cfg, err := config.NewConfig(argv, version, exitOk)
 	if err != nil {
 		return err
 	}
+	config.SetupLogging(cfg.Verbose, cfg.Quiet)
+
+	// TODO.
 	if exitOk {
-		fmt.Printf("%v\n", cfg)
+		config.GetLogger().Infof("%v", cfg)
 	}
 	return nil
 }

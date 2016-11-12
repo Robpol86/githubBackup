@@ -1,8 +1,12 @@
-hash: 718df06917f3899446ef12469851cf06a7e851f25f537770ca11f03229239158
-updated: 2016-10-22T20:04:07.322730982-07:00
+hash: c9f230d666098db7ab19096df29435742743062eb9c6fe2243c3200b5c21c55f
+updated: 2016-11-10T22:00:07.229036166-08:00
 imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
+- name: github.com/Robpol86/logrus-custom-formatter
+  version: e162f53a9e605c4a787d0e7028c42e5e79adc314
+- name: github.com/Sirupsen/logrus
+  version: d26492970760ca5d33129d2d799e34be5c4782eb
 - name: github.com/stretchr/testify
   version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
