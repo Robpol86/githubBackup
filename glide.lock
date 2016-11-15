@@ -1,23 +1,27 @@
-hash: c9f230d666098db7ab19096df29435742743062eb9c6fe2243c3200b5c21c55f
-updated: 2016-11-10T22:00:07.229036166-08:00
+hash: 254cd179b26d1c1ab4b3a378820f081952c1a403609d4c31d2bb8421f2f340d7
+updated: 2016-11-14T19:34:19.228077576-08:00
 imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
 - name: github.com/Robpol86/logrus-custom-formatter
-  version: e162f53a9e605c4a787d0e7028c42e5e79adc314
+  version: e8bd909fb9f7fa8714d4a075b23eac863615103c
 - name: github.com/Sirupsen/logrus
   version: d26492970760ca5d33129d2d799e34be5c4782eb
-- name: github.com/stretchr/testify
-  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+- name: golang.org/x/sys
+  version: b699b7032584f0953262cb2788a0ca19bb494703
   subpackages:
-  - assert
-  - require
+  - unix
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  version: 2df174808ee097f90d259e432cc04442cf60be21
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
   version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
   subpackages:
   - difflib
+- name: github.com/stretchr/testify
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - assert
+  - require

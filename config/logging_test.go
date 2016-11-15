@@ -34,7 +34,7 @@ func TestSetupLogging(t *testing.T) {
 			})
 			assert.NoError(err)
 			assert.Empty(stderr)
-			actual := strings.Split(stdout, `\n`)
+			actual := strings.Split(stdout, "\n")
 
 			// Determine expected from test case.
 			var expected []string
