@@ -20,6 +20,7 @@ Usage:
     githubBackup -V | --version
 
 Options:
+    -C --no-colors      Disable colored log levels and field keys.
     -G --no-gist        Skip backing up your GitHub Gists.
     -h --help           Show this screen.
     -I --no-issues      Skip backing up your repo issues.
@@ -52,6 +53,7 @@ func parseBool(value interface{}) bool {
 type Config struct {
 	Destination string
 	LogFile     string
+	NoColors    bool
 	NoGist      bool
 	NoIssues    bool
 	NoPrivate   bool
@@ -82,6 +84,7 @@ func NewConfig(argv []string, version string, exitOk bool) (Config, error) {
 	config := Config{
 		Destination: parseString(parsed["DESTINATION"]),
 		LogFile:     parseString(parsed["--log"]),
+		NoColors:    parseBool(parsed["--no-colors"]),
 		NoGist:      parseBool(parsed["--no-gist"]),
 		NoIssues:    parseBool(parsed["--no-issues"]),
 		NoPrivate:   parseBool(parsed["--no-private"]),

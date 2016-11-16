@@ -35,21 +35,24 @@ func (h *stderrHook) Fire(entry *logrus.Entry) error {
 // :param verbose: Enable debug logging.
 //
 // :param quiet: Disable any logging to the console.
-func SetupLogging(verbose, quiet bool) {
+//
+// :param noColors: Disable color log levels and field keys.
+func SetupLogging(verbose, quiet, noColors bool) {
 	if quiet {
 		logrus.SetOutput(ioutil.Discard)
 		return
 	}
 
 	// Set formatting and level.
-	var template string
+	var formatter *lcf.CustomFormatter
 	if verbose {
 		logrus.SetLevel(logrus.DebugLevel)
-		template = lcf.Detailed
+		formatter = lcf.NewFormatter(lcf.Detailed, nil)
 	} else {
-		template = lcf.Message
+		formatter = lcf.NewFormatter(lcf.Message, nil)
 	}
-	logrus.SetFormatter(lcf.NewFormatter(template, nil))
+	formatter.DisableColors = noColors
+	logrus.SetFormatter(formatter)
 
 	// Handle stdout/stderr.
 	logrus.SetOutput(os.Stdout) // Default is stdout for info/debug which are emitted most often.

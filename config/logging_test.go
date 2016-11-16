@@ -29,7 +29,7 @@ func TestSetupLogging(t *testing.T) {
 			// Run.
 			stdout, stderr, err := testUtils.WithCapSys(func() {
 				testUtils.ResetLogger()
-				SetupLogging(verbose, quiet)
+				SetupLogging(verbose, quiet, true)
 				testUtils.LogMsgs()
 			})
 			assert.NoError(err)
