@@ -33,40 +33,58 @@ func TestSetupLogging(t *testing.T) {
 				testUtils.LogMsgs()
 			})
 			assert.NoError(err)
-			assert.Empty(stderr)
-			actual := strings.Split(stdout, "\n")
+			actualOut := strings.Split(stdout, "\n")
+			actualErr := strings.Split(stderr, "\n")
 
 			// Determine expected from test case.
-			var expected []string
+			var expectedOut []string
+			var expectedErr []string
 			if quiet {
-				expected = []string{""}
+				expectedOut = []string{""}
+				expectedErr = []string{""}
 			} else if verbose {
-				for i, str := range actual {
+				for i, str := range actualOut {
 					if str != "" {
-						actual[i] = testUtils.ReTimestamp.ReplaceAllString(str, "2016-10-30 19:12:17.149")
+						actualOut[i] = testUtils.ReTimestamp.ReplaceAllString(str, "2016-10-30 19:12:17.149")
 					}
 				}
-				expected = []string{
+				for i, str := range actualErr {
+					if str != "" {
+						actualErr[i] = testUtils.ReTimestamp.ReplaceAllString(str, "2016-10-30 19:12:17.149")
+					}
+				}
+				expectedOut = []string{
 					"2016-10-30 19:12:17.149 %s DEBUG   SetupLogging         Configured logging.",
 					"2016-10-30 19:12:17.149 %s DEBUG   LogMsgs              Sample debug 1.",
 					"2016-10-30 19:12:17.149 %s DEBUG   LogMsgs              Sample debug 2. a=b c=10",
 					"2016-10-30 19:12:17.149 %s INFO    LogMsgs              Sample info 1.",
 					"2016-10-30 19:12:17.149 %s INFO    LogMsgs              Sample info 2. a=b c=10",
+					"",
+				}
+				expectedErr = []string{
 					"2016-10-30 19:12:17.149 %s WARNING LogMsgs              Sample warn 1.",
 					"2016-10-30 19:12:17.149 %s WARNING LogMsgs              Sample warn 2. a=b c=10",
 					"2016-10-30 19:12:17.149 %s ERROR   LogMsgs              Sample error 1.",
 					"2016-10-30 19:12:17.149 %s ERROR   LogMsgs              Sample error 2. a=b c=10",
 					"",
 				}
-				for i, str := range expected {
+				for i, str := range expectedOut {
 					if str != "" {
-						expected[i] = fmt.Sprintf(str, fmt.Sprintf("%-5d", os.Getpid()))
+						expectedOut[i] = fmt.Sprintf(str, fmt.Sprintf("%-5d", os.Getpid()))
+					}
+				}
+				for i, str := range expectedErr {
+					if str != "" {
+						expectedErr[i] = fmt.Sprintf(str, fmt.Sprintf("%-5d", os.Getpid()))
 					}
 				}
 			} else {
-				expected = []string{
+				expectedOut = []string{
 					"Sample info 1.",
 					"Sample info 2.",
+					"",
+				}
+				expectedErr = []string{
 					"Sample warn 1.",
 					"Sample warn 2.",
 					"Sample error 1.",
@@ -76,7 +94,8 @@ func TestSetupLogging(t *testing.T) {
 			}
 
 			// Verify.
-			assert.Equal(expected, actual)
+			assert.Equal(expectedOut, actualOut)
+			assert.Equal(expectedErr, actualErr)
 		})
 	}
 }
