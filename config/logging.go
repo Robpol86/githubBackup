@@ -14,19 +14,16 @@ func GetLogger() *logrus.Entry {
 	return logrus.WithField("name", lcf.CallerName(2))
 }
 
-type stderrHook struct{}
+type stderrHook struct {
+	logger *logrus.Logger
+}
 
 func (h *stderrHook) Levels() []logrus.Level {
 	return []logrus.Level{logrus.PanicLevel, logrus.FatalLevel, logrus.ErrorLevel, logrus.WarnLevel}
 }
 
 func (h *stderrHook) Fire(entry *logrus.Entry) error {
-	// logrus.Entry.log() is a non-pointer receiver function so it's goroutine safe to re-define *entry.Logger. The
-	// only race condition is between hooks since there is no locking. However .log() calls all hooks in series, not
-	// parallel. Therefore it should be ok to "duplicate" Logger and only change the Out field.
-	loggerCopy := reflect.ValueOf(*entry.Logger).Interface().(logrus.Logger)
-	entry.Logger = &loggerCopy
-	entry.Logger.Out = os.Stderr
+	entry.Logger = h.logger
 	return nil
 }
 
@@ -51,12 +48,25 @@ func SetupLogging(verbose, quiet, noColors bool) {
 	} else {
 		formatter = lcf.NewFormatter(lcf.Message, nil)
 	}
-	formatter.DisableColors = noColors
+
+	// Console formatter colors.
+	if noColors {
+		formatter.DisableColors = true
+	} else {
+		lcf.WindowsEnableNativeANSI(true)
+		lcf.WindowsEnableNativeANSI(false)
+	}
 	logrus.SetFormatter(formatter)
 
 	// Handle stdout/stderr.
 	logrus.SetOutput(os.Stdout) // Default is stdout for info/debug which are emitted most often.
-	logrus.AddHook(&stderrHook{})
+	// logrus.Entry.log() is a non-pointer receiver function so it's goroutine safe to re-define *entry.Logger. The
+	// only race condition is between hooks since there is no locking. However .log() calls all hooks in series, not
+	// parallel. Therefore it should be ok to "duplicate" Logger and only change the Out field.
+	loggerCopy := reflect.ValueOf(*logrus.StandardLogger()).Interface().(logrus.Logger)
+	hook := stderrHook{logger: &loggerCopy}
+	hook.logger.Out = os.Stderr
+	logrus.AddHook(&hook)
 
 	GetLogger().Debug("Configured logging.")
 }
