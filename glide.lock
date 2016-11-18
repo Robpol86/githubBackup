@@ -1,8 +1,10 @@
-hash: 254cd179b26d1c1ab4b3a378820f081952c1a403609d4c31d2bb8421f2f340d7
-updated: 2016-11-14T19:34:19.228077576-08:00
+hash: 8e1ad0048da13b012b2ee04dc722dc51f33c46544ffb2b1c28df42a1d2a635f4
+updated: 2016-11-16T08:41:08.168732606-08:00
 imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
+- name: github.com/rifflock/lfshook
+  version: 3f9d976bd7402de39b46357069fb6325a974572e
 - name: github.com/Robpol86/logrus-custom-formatter
   version: e8bd909fb9f7fa8714d4a075b23eac863615103c
 - name: github.com/Sirupsen/logrus
