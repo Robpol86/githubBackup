@@ -39,6 +39,7 @@ func SetupLogging(verbose, quiet, noColors bool) {
 		logrus.SetOutput(ioutil.Discard)
 		return
 	}
+	defer GetLogger().Debug("Configured logging.")
 
 	// Set formatting and level.
 	var formatter *lcf.CustomFormatter
@@ -48,6 +49,7 @@ func SetupLogging(verbose, quiet, noColors bool) {
 	} else {
 		formatter = lcf.NewFormatter(lcf.Message, nil)
 	}
+	logrus.SetFormatter(formatter)
 
 	// Console formatter colors.
 	if noColors {
@@ -56,7 +58,6 @@ func SetupLogging(verbose, quiet, noColors bool) {
 		lcf.WindowsEnableNativeANSI(true)
 		lcf.WindowsEnableNativeANSI(false)
 	}
-	logrus.SetFormatter(formatter)
 
 	// Handle stdout/stderr.
 	logrus.SetOutput(os.Stdout) // Default is stdout for info/debug which are emitted most often.
@@ -67,6 +68,4 @@ func SetupLogging(verbose, quiet, noColors bool) {
 	hook := stderrHook{logger: &loggerCopy}
 	hook.logger.Out = os.Stderr
 	logrus.AddHook(&hook)
-
-	GetLogger().Debug("Configured logging.")
 }

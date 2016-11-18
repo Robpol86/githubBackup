@@ -5,7 +5,7 @@ NAME := $(shell grep "^[^=]" README.rst |head -1)
 ALL_COVER := $(addsuffix /cover.out,$(subst github.com/Robpol86/${NAME},.,${ALL_PKGS}))
 GOPATH := $(subst \,/,${GOPATH})
 
-all: clean lint test build
+all: clean vendor lint test build
 
 clean:
 	rm -f $(NAME) $(ALL_COVER)
@@ -25,7 +25,7 @@ $(GOPATH)/bin/glide:
 	go get -u github.com/Masterminds/glide
 
 bootstrap vendor: $(GOPATH)/bin/glide
-	glide up
+	glide install
 
 ${ALL_COVER}: PKG=$(addprefix github.com/Robpol86/${NAME}/,$(dir $@))
 ${ALL_COVER}:
