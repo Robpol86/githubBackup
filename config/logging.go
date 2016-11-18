@@ -49,15 +49,13 @@ func SetupLogging(verbose, quiet, noColors bool) {
 	} else {
 		formatter = lcf.NewFormatter(lcf.Message, nil)
 	}
-	logrus.SetFormatter(formatter)
-
-	// Console formatter colors.
 	if noColors {
 		formatter.DisableColors = true
-	} else {
+	} else if !quiet {
 		lcf.WindowsEnableNativeANSI(true)
 		lcf.WindowsEnableNativeANSI(false)
 	}
+	logrus.SetFormatter(formatter)
 
 	// Handle stdout/stderr.
 	logrus.SetOutput(os.Stdout) // Default is stdout for info/debug which are emitted most often.

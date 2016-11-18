@@ -29,7 +29,7 @@ func runSetupLogging(assert *require.Assertions, verbose, quiet bool) (aOut, aEr
 	// Run.
 	stdout, stderr, err := testUtils.WithCapSys(func() {
 		testUtils.ResetLogger()
-		SetupLogging(verbose, quiet, true)
+		SetupLogging(verbose, quiet, false)
 		if !quiet {
 			formatter := logrus.StandardLogger().Formatter.(*lcf.CustomFormatter)
 			formatter.ForceColors = true
