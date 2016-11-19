@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Robpol86/githubBackup/testUtils"
+	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,6 +24,30 @@ func normalizeActualExpected(actual, expected []string) {
 			expected[i] = fmt.Sprintf(str, fmt.Sprintf("%-5d", os.Getpid()))
 		}
 	}
+}
+
+func hasStderrHook(levelHooks logrus.LevelHooks) bool {
+	for _, hooks := range levelHooks {
+		for _, hook := range hooks {
+			switch hook.(type) {
+			case *stderrHook:
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func hasLogFileHook(levelHooks logrus.LevelHooks) bool {
+	for _, hooks := range levelHooks {
+		for _, hook := range hooks {
+			switch hook.(type) {
+			case *logFileHook:
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func runSetupLogging(assert *require.Assertions, verbose, quiet, hasLogFile bool) (aOut, aErr, aFile []string) {
@@ -41,6 +66,18 @@ func runSetupLogging(assert *require.Assertions, verbose, quiet, hasLogFile bool
 		testUtils.LogMsgs()
 	})
 	assert.NoError(err)
+
+	// Verify hooks.
+	if quiet {
+		assert.False(hasStderrHook(logrus.StandardLogger().Hooks))
+	} else {
+		assert.True(hasStderrHook(logrus.StandardLogger().Hooks))
+	}
+	if hasLogFile {
+		assert.True(hasLogFileHook(logrus.StandardLogger().Hooks))
+	} else {
+		assert.False(hasLogFileHook(logrus.StandardLogger().Hooks))
+	}
 
 	// Read.
 	aOut = strings.Split(stdout, "\n")
