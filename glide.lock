@@ -1,8 +1,10 @@
-hash: 8e1ad0048da13b012b2ee04dc722dc51f33c46544ffb2b1c28df42a1d2a635f4
-updated: 2016-11-16T08:41:08.168732606-08:00
+hash: b49fbf0bf7c3e60cb44de349cbae6d929cd608c0e828488c8c06ed06cd408e23
+updated: 2016-11-20T13:11:06.238204326-08:00
 imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
+- name: github.com/google/go-github
+  version: d4f1b2d029be1730fd349ca929cc9c0da4a27007
 - name: github.com/rifflock/lfshook
   version: 3f9d976bd7402de39b46357069fb6325a974572e
 - name: github.com/Robpol86/logrus-custom-formatter
@@ -15,7 +17,7 @@ imports:
   - unix
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 2df174808ee097f90d259e432cc04442cf60be21
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
