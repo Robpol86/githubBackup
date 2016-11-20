@@ -1,10 +1,16 @@
 hash: b49fbf0bf7c3e60cb44de349cbae6d929cd608c0e828488c8c06ed06cd408e23
-updated: 2016-11-20T13:11:06.238204326-08:00
+updated: 2016-11-20T14:21:27.176059203-08:00
 imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
 - name: github.com/google/go-github
   version: d4f1b2d029be1730fd349ca929cc9c0da4a27007
+  subpackages:
+  - github
+- name: github.com/google/go-querystring
+  version: 9235644dd9e52eeae6fa48efd539fdc351a0af53
+  subpackages:
+  - query
 - name: github.com/rifflock/lfshook
   version: 3f9d976bd7402de39b46357069fb6325a974572e
 - name: github.com/Robpol86/logrus-custom-formatter
