@@ -9,6 +9,7 @@ import:
 - package: github.com/rifflock/lfshook
   version: ~1.2.0
 - package: github.com/google/go-github
+- package: golang.org/x/oauth2
 testImport:
 - package: github.com/stretchr/testify
   version: ~1.1.4
