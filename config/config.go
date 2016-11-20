@@ -17,8 +17,11 @@ Also downloads all of your GitHub Issues and Wiki pages, along with all of your
 GitHub Gists. Each Gist is its own Git repo so each one will be cloned to their
 own individual directory locally.
 
+If the --user option is specified then that users' repos/gists will be backed
+up instead of yours. When specified the personal API token is optional.
+
 Usage:
-    githubBackup [options] USERNAME DESTINATION
+    githubBackup [options] DESTINATION
     githubBackup -h | --help
     githubBackup -V | --version
 
@@ -32,6 +35,7 @@ Options:
     -q --quiet          Don't print anything to stdout/stderr.
     -R --no-repos       Skip backing up your GitHub repos.
     -T --no-private     Skip backing up your private repos and private Gists.
+    -u USER --user=USER GitHub user to lookup.
     -v --verbose        Debug logging.
     -V --version        Show version and exit.
     -w --overwrite      Do git reset on existing directories.
@@ -65,7 +69,7 @@ type Config struct {
 	NoWikis     bool
 	Overwrite   bool
 	Quiet       bool
-	Username    string
+	User        string
 	Verbose     bool
 }
 
@@ -92,7 +96,7 @@ func NewConfig(argv []string) (Config, error) {
 		NoWikis:     parseBool(parsed["--no-wikis"]),
 		Overwrite:   parseBool(parsed["--overwrite"]),
 		Quiet:       parseBool(parsed["--quiet"]),
-		Username:    parseString(parsed["USERNAME"]),
+		User:        parseString(parsed["--user"]),
 		Verbose:     parseBool(parsed["--verbose"]),
 	}
 	return config, nil
