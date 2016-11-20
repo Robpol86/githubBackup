@@ -30,8 +30,7 @@ func normalizeActualExpected(actual, expected []string) {
 func hasStderrHook(levelHooks logrus.LevelHooks) bool {
 	for _, hooks := range levelHooks {
 		for _, hook := range hooks {
-			switch hook.(type) {
-			case *stderrHook:
+			if _, ok := hook.(*stderrHook); ok {
 				return true
 			}
 		}
@@ -42,8 +41,7 @@ func hasStderrHook(levelHooks logrus.LevelHooks) bool {
 func hasLogFileHook(levelHooks logrus.LevelHooks) bool {
 	for _, hooks := range levelHooks {
 		for _, hook := range hooks {
-			switch hook.(type) {
-			case *logFileHook:
+			if _, ok := hook.(*logFileHook); ok {
 				return true
 			}
 		}
@@ -106,7 +104,7 @@ func testSetupLogging(t *testing.T, verbose, quiet, hasLogFile bool) {
 		expectedErr = []string{""}
 	} else if verbose {
 		expectedOut = []string{
-			"2016-10-30 19:12:17.149 %s \x1b[36mDEBUG\x1b[0m   SetupLogging         Configured logging.",
+			"2016-10-30 19:12:17.149 %s \x1b[32mINFO\x1b[0m    SetupLogging         githubBackup " + Version,
 			"2016-10-30 19:12:17.149 %s \x1b[36mDEBUG\x1b[0m   LogMsgs              Sample debug 1.",
 			"2016-10-30 19:12:17.149 %s \x1b[36mDEBUG\x1b[0m   LogMsgs              Sample debug 2. \x1b[36ma\x1b[0m=b \x1b[36mc\x1b[0m=10",
 			"2016-10-30 19:12:17.149 %s \x1b[32mINFO\x1b[0m    LogMsgs              Sample info 1.",
@@ -122,6 +120,7 @@ func testSetupLogging(t *testing.T, verbose, quiet, hasLogFile bool) {
 		}
 	} else {
 		expectedOut = []string{
+			"githubBackup " + Version,
 			"Sample info 1.",
 			"Sample info 2.",
 			"",
@@ -141,7 +140,7 @@ func testSetupLogging(t *testing.T, verbose, quiet, hasLogFile bool) {
 		// Nothing.
 	} else if verbose {
 		expectedFile = []string{
-			"2016-10-30 19:12:17.149 %s DEBUG   SetupLogging         Configured logging.",
+			"2016-10-30 19:12:17.149 %s INFO    SetupLogging         githubBackup " + Version,
 			"2016-10-30 19:12:17.149 %s DEBUG   LogMsgs              Sample debug 1.",
 			"2016-10-30 19:12:17.149 %s DEBUG   LogMsgs              Sample debug 2. a=b c=10",
 			"2016-10-30 19:12:17.149 %s INFO    LogMsgs              Sample info 1.",
@@ -154,6 +153,7 @@ func testSetupLogging(t *testing.T, verbose, quiet, hasLogFile bool) {
 		}
 	} else {
 		expectedFile = []string{
+			"githubBackup " + Version,
 			"Sample info 1.",
 			"Sample info 2.",
 			"Sample warn 1.",
@@ -239,7 +239,7 @@ func TestSetupLoggingLogFileError(t *testing.T) {
 			// Run.
 			stdout, stderr, err := testUtils.WithCapSys(func() {
 				testUtils.ResetLogger()
-				err := SetupLogging(true, true, false, true, logFile)
+				err := SetupLogging(false, true, false, true, logFile)
 				assert.Error(err)
 				assert.True(strings.HasSuffix(err.Error(), expectedSuffix), err.Error())
 			})

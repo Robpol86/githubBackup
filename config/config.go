@@ -4,6 +4,9 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
+// Version is the semantic version of the program.
+const Version = "0.0.1"
+
 const usage = `Backup all of your GitHub repos (with issues/wikis) and Gists.
 
 Clone all of your public and private repos into individual local directories in
@@ -69,13 +72,9 @@ type Config struct {
 // NewConfig populates the struct with data read from command line arguments using docopt.
 //
 // :param argv: CLI arguments to pass to docopt.Parse().
-//
-// :param version: Version string to print on --version.
-//
-// :param exitOk: Passed to docopt.Parse(). If true docopt.Parse calls os.Exit() which aborts tests.
-func NewConfig(argv []string, version string, exitOk bool) (Config, error) {
+func NewConfig(argv []string) (Config, error) {
 	// Parse CLI.
-	parsed, err := docopt.Parse(usage, argv, true, version, true, exitOk)
+	parsed, err := docopt.Parse(usage, argv, true, Version, true)
 	if err != nil {
 		return Config{}, err
 	}

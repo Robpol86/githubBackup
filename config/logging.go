@@ -105,7 +105,7 @@ func SetupLogging(verbose, quiet, disableColors, forceColors bool, logFile strin
 		hook.logger.Out = os.Stderr
 		logrus.AddHook(&hook)
 		if logFile == "" {
-			GetLogger().Debug("Configured logging.")
+			GetLogger().Infof("githubBackup %s", Version)
 			return
 		}
 	}
@@ -125,7 +125,7 @@ func SetupLogging(verbose, quiet, disableColors, forceColors bool, logFile strin
 	logrus.AddHook(&hook)
 
 	// Emit debug log and check for errors.
-	GetLogger().Debug("Configured logging.")
+	GetLogger().Infof("githubBackup %s", Version)
 	if hook.error != nil {
 		s := strings.Split(hook.error.Error(), ":")
 		switch s[len(s)-1] {

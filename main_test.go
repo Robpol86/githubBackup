@@ -2,12 +2,15 @@ package main
 
 import (
 	"bufio"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/Robpol86/githubBackup/config"
 	"github.com/Robpol86/githubBackup/testUtils"
 )
 
@@ -46,27 +49,25 @@ func TestMainVersionConsistency(t *testing.T) {
 	}
 
 	// Verify.
-	assert.Equal(readmeVersion, version)
+	assert.Equal(readmeVersion, config.Version)
 }
 
-func TestMainVersion(t *testing.T) {
+func TestMainLogError(t *testing.T) {
 	assert := require.New(t)
-	stdout, stderr, err := testUtils.WithCapSys(func() {
-		err := Main([]string{"-V"}, false)
-		assert.NoError(err)
-	})
-	assert.NoError(err)
-	assert.Empty(stderr)
-	assert.Equal(version+"\n", stdout)
-}
 
-func TestMainNoArgs(t *testing.T) {
-	assert := require.New(t)
-	stdout, stderr, err := testUtils.WithCapSys(func() {
-		err := Main(nil, false)
-		assert.Error(err)
-	})
+	tmpdir, err := ioutil.TempDir("", "")
 	assert.NoError(err)
-	assert.Equal("Usage:", stderr[:6])
-	assert.Empty(stdout)
+	defer os.RemoveAll(tmpdir)
+	logFile := filepath.Join(tmpdir, "dne", "sample.log")
+
+	defer testUtils.ResetLogger()
+	stdout, stderr, err := testUtils.WithCapSys(func() {
+		testUtils.ResetLogger()
+		ret := Main([]string{"-l", logFile, "User", tmpdir})
+		assert.Equal(2, ret)
+	})
+
+	assert.NoError(err)
+	assert.Contains(stdout, "githubBackup "+config.Version)
+	assert.Contains(stderr, "Failed to setup logging: ")
 }
