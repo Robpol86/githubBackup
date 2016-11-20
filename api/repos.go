@@ -25,7 +25,7 @@ func GetRepos(user, token string, private bool) (repos []*github.Repository, err
 	// Configure request options.
 	var options *github.RepositoryListOptions
 	if private != true {
-		// TODO
+		options = &github.RepositoryListOptions{Visibility: "public"}
 	}
 
 	// Query API.
