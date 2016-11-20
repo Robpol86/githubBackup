@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -62,7 +63,8 @@ func runSetupLogging(assert *require.Assertions, verbose, quiet, hasLogFile bool
 	// Run.
 	stdout, stderr, err := testUtils.WithCapSys(func() {
 		testUtils.ResetLogger()
-		SetupLogging(verbose, quiet, false, true, logFile)
+		err := SetupLogging(verbose, quiet, false, true, logFile)
+		assert.NoError(err)
 		testUtils.LogMsgs()
 	})
 	assert.NoError(err)
@@ -180,5 +182,73 @@ func TestSetupLogging(t *testing.T) {
 				t.Run(name, func(t *testing.T) { testSetupLogging(t, verbose, quiet, hasLogFile) })
 			}
 		}
+	}
+}
+
+func osStr(posix, windows string) string {
+	if runtime.GOOS == "windows" {
+		return windows
+	}
+	return posix
+}
+
+func TestSetupLoggingLogFileError(t *testing.T) {
+	defer testUtils.ResetLogger()
+
+	testCases := map[string]string{
+		"no parent": "dne: no such directory",
+		"a dir":     "is a directory",
+		"file u-w":  osStr("permission denied", "Access is denied."),
+	}
+	if runtime.GOOS != "windows" {
+		testCases["dir u-w"], testCases["dir u-x"] = "permission denied", "permission denied"
+	}
+
+	for mode, expectedSuffix := range testCases {
+		name := fmt.Sprintf("mode:%s|suffix:%s", mode, expectedSuffix)
+		t.Run(name, func(t *testing.T) {
+			assert := require.New(t)
+
+			// Get temporary directory.
+			tmpdir, err := ioutil.TempDir("", "")
+			assert.NoError(err)
+			defer os.RemoveAll(tmpdir)
+
+			// Setup filesystem.
+			logFile := filepath.Join(tmpdir, "sample.log")
+			switch mode {
+			case "no parent":
+				logFile = filepath.Join(tmpdir, "dne", "sample.log")
+			case "a dir":
+				logFile = tmpdir
+			case "file u-w":
+				f, err := os.Create(logFile)
+				assert.NoError(err)
+				f.Close()
+				os.Chmod(logFile, 0400)
+			case "dir u-w", "dir u-x":
+				subdir := filepath.Join(tmpdir, "sub")
+				logFile = filepath.Join(subdir, "sample.log")
+				if mode == "dir u-w" {
+					os.Mkdir(subdir, 0500)
+				} else {
+					os.Mkdir(subdir, 0600)
+				}
+			}
+
+			// Run.
+			stdout, stderr, err := testUtils.WithCapSys(func() {
+				testUtils.ResetLogger()
+				err := SetupLogging(true, true, false, true, logFile)
+				assert.Error(err)
+				assert.True(strings.HasSuffix(err.Error(), expectedSuffix), err.Error())
+			})
+			assert.NoError(err)
+			assert.Empty(stdout)
+			assert.Contains(stderr, "failed to open logfile")
+
+			// Verify hooks.
+			assert.True(hasLogFileHook(logrus.StandardLogger().Hooks))
+		})
 	}
 }

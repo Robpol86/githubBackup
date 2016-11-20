@@ -17,7 +17,9 @@ func Main(argv []string, exitOk bool) error {
 	if err != nil {
 		return err
 	}
-	config.SetupLogging(cfg.Verbose, cfg.Quiet, cfg.NoColors, false, cfg.LogFile)
+	if err := config.SetupLogging(cfg.Verbose, cfg.Quiet, cfg.NoColors, false, cfg.LogFile); err != nil {
+		return err
+	}
 
 	// TODO.
 	if exitOk {

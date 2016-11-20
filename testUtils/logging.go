@@ -1,6 +1,8 @@
 package testUtils
 
 import (
+	"log"
+	"os"
 	"regexp"
 
 	"github.com/Robpol86/logrus-custom-formatter"
@@ -14,17 +16,18 @@ var ReTimestamp = regexp.MustCompile(`^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{3}`)
 // Otherwise after patching the streams logrus still points to the original file descriptor.
 func ResetLogger() {
 	*logrus.StandardLogger() = *logrus.New()
+	log.SetOutput(os.Stderr)
 }
 
 // LogMsgs logs sample messages to logrus.
 func LogMsgs() {
-	log := logrus.WithField("name", lcf.CallerName(1))
-	log.Debug("Sample debug 1.")
-	log.WithFields(logrus.Fields{"a": "b", "c": 10}).Debug("Sample debug 2.")
-	log.Info("Sample info 1.")
-	log.WithFields(logrus.Fields{"a": "b", "c": 10}).Info("Sample info 2.")
-	log.Warn("Sample warn 1.")
-	log.WithFields(logrus.Fields{"a": "b", "c": 10}).Warn("Sample warn 2.")
-	log.Error("Sample error 1.")
-	log.WithFields(logrus.Fields{"a": "b", "c": 10}).Error("Sample error 2.")
+	logger := logrus.WithField("name", lcf.CallerName(1))
+	logger.Debug("Sample debug 1.")
+	logger.WithFields(logrus.Fields{"a": "b", "c": 10}).Debug("Sample debug 2.")
+	logger.Info("Sample info 1.")
+	logger.WithFields(logrus.Fields{"a": "b", "c": 10}).Info("Sample info 2.")
+	logger.Warn("Sample warn 1.")
+	logger.WithFields(logrus.Fields{"a": "b", "c": 10}).Warn("Sample warn 2.")
+	logger.Error("Sample error 1.")
+	logger.WithFields(logrus.Fields{"a": "b", "c": 10}).Error("Sample error 2.")
 }
