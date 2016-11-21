@@ -60,7 +60,7 @@ func GetRepos(user, token string, noPublic, noPrivate, noForks bool) (repositori
 
 	// Parse.
 	for _, repo := range repos {
-		if noForks && *repo.Fork {
+		if (noForks && *repo.Fork) || (noPublic && !*repo.Private) || (noPrivate && *repo.Private) {
 			continue
 		}
 		repositories = append(repositories, Repository{
