@@ -20,14 +20,18 @@ type Repository struct {
 	PushedAt time.Time
 }
 
-// GetRepos retrieves the list of public and optionall private GitHub repos on the user's account. // TODO toggle forks.
+// GetRepos retrieves the list of public and optional private GitHub repos on the user's account.
 //
 // :param user: Get repositories for this user. If blank username is derived from token.
 //
 // :param token: API token for authentication. Required if user is blank.
 //
-// :param private: Also lookup private repositories. Requires API token.
-func GetRepos(user, token string, private bool) (repositories []Repository, err error) {
+// :param noPublic: Skip public repos.
+//
+// :param noPrivate: Skip private repos.
+//
+// :param noForks: Skip forked repos.
+func GetRepos(user, token string, noPublic, noPrivate, noForks bool) (repositories []Repository, err error) {
 	log := config.GetLogger()
 
 	// Setup HTTP client.
@@ -40,8 +44,10 @@ func GetRepos(user, token string, private bool) (repositories []Repository, err 
 
 	// Configure request options.
 	var options *github.RepositoryListOptions
-	if private != true {
+	if noPrivate {
 		options = &github.RepositoryListOptions{Visibility: "public"}
+	} else if noPublic {
+		options = &github.RepositoryListOptions{Visibility: "private"}
 	}
 
 	// Query API.
@@ -54,6 +60,9 @@ func GetRepos(user, token string, private bool) (repositories []Repository, err 
 
 	// Parse.
 	for _, repo := range repos {
+		if noForks && *repo.Fork {
+			continue
+		}
 		repositories = append(repositories, Repository{
 			Name:     *repo.Name,
 			Private:  *repo.Private,

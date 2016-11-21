@@ -27,6 +27,7 @@ Usage:
 
 Options:
     -C --no-colors      Disable colored log levels and field keys.
+    -F --no-forks	Skip backing up forked repos.
     -G --no-gist        Skip backing up your GitHub Gists.
     -h --help           Show this screen.
     -I --no-issues      Skip backing up your repo issues.
@@ -61,6 +62,7 @@ type Config struct {
 	Destination string
 	LogFile     string
 	NoColors    bool
+	NoForks     bool
 	NoGist      bool
 	NoIssues    bool
 	NoPrivate   bool
@@ -88,6 +90,7 @@ func NewConfig(argv []string) (Config, error) {
 		Destination: parseString(parsed["DESTINATION"]),
 		LogFile:     parseString(parsed["--log"]),
 		NoColors:    parseBool(parsed["--no-colors"]),
+		NoForks:     parseBool(parsed["--no-forks"]),
 		NoGist:      parseBool(parsed["--no-gist"]),
 		NoIssues:    parseBool(parsed["--no-issues"]),
 		NoPrivate:   parseBool(parsed["--no-private"]),
