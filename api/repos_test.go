@@ -36,5 +36,5 @@ func TestGetReposBadAuth(t *testing.T) {
 	// Verify log.
 	assert.NoError(err)
 	assert.Empty(stdout)
-	assert.Equal("Failed to query for repos: TODO", stderr)
+	assert.Contains(stderr, "Failed to query for repos: GET https://api.github.com/user/repos: 401 Bad credentials")
 }
