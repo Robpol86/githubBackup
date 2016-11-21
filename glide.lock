@@ -1,5 +1,5 @@
-hash: 7f49a3d884926f84d7edef61a1db4f90bd4ce76d13964233baa00be3d2a7bcc0
-updated: 2016-11-20T15:30:47.812552799-08:00
+hash: 16a3aade29004a6a72711d272a7b2d54e4984e84f5ca0d47f6db477f8dea9162
+updated: 2016-11-20T21:41:40.971151321-08:00
 imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
@@ -48,6 +48,8 @@ testImports:
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
+- name: github.com/jarcoal/httpmock
+  version: 145b10d659265440f062c31ea15326166bae56ee
 - name: github.com/pmezard/go-difflib
   version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
   subpackages:
