@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/google/go-github/github"
@@ -26,12 +27,14 @@ type Repository struct {
 //
 // :param token: API token for authentication. Required if user is blank.
 //
+// :param apiURL: GitHub API url to query. For testing. Leave blank for default.
+//
 // :param noPublic: Skip public repos.
 //
 // :param noPrivate: Skip private repos.
 //
 // :param noForks: Skip forked repos.
-func GetRepos(user, token string, noPublic, noPrivate, noForks bool) (repositories []Repository, err error) {
+func GetRepos(user, token, apiURL string, noPublic, noPrivate, noForks bool) (repositories []Repository, err error) {
 	log := config.GetLogger()
 
 	// Setup HTTP client.
@@ -41,6 +44,9 @@ func GetRepos(user, token string, noPublic, noPrivate, noForks bool) (repositori
 		httpClient = oauth2.NewClient(oauth2.NoContext, tokenSource)
 	}
 	client := github.NewClient(httpClient)
+	if apiURL != "" {
+		client.BaseURL, _ = url.Parse(apiURL)
+	}
 
 	// Configure request options.
 	var options *github.RepositoryListOptions
