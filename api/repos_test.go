@@ -12,13 +12,12 @@ import (
 )
 
 func TestGetReposBad(t *testing.T) {
+	user := map[string]string{"auth": "", "user": "unknown"}
+	token := map[string]string{"auth": "bad token", "user": ""}
+	replyCode := map[string]int{"auth": 401, "user": 404}
 	reply := map[string]string{
 		"auth": `{"message": "Bad credentials", "documentation_url": ""}`,
 		"user": `{"message": "Not Found", "documentation_url": ""}`,
-	}
-	replyCode := map[string]int{
-		"auth": 401,
-		"user": 404,
 	}
 	errorMsg := map[string]string{
 		"auth": "GET %s/user/repos: 401 Bad credentials []",
@@ -27,14 +26,6 @@ func TestGetReposBad(t *testing.T) {
 	contains := map[string]string{
 		"auth": "Failed to query for repos: GET %s/user/repos: 401 Bad credentials",
 		"user": "Failed to query for repos: GET %s/users/unknown/repos: 404 Not Found",
-	}
-	user := map[string]string{
-		"auth": "",
-		"user": "unknown",
-	}
-	token := map[string]string{
-		"auth": "bad token",
-		"user": "",
 	}
 
 	for _, bad := range []string{"auth", "user"} {
