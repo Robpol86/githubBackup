@@ -2,8 +2,11 @@ package api
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"path"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -28,7 +31,7 @@ func TestGetReposBad(t *testing.T) {
 		"user": "Failed to query for repos: GET %s/users/unknown/repos: 404 Not Found",
 	}
 
-	for _, bad := range []string{"auth", "user"} {
+	for _, bad := range []string{"auth", "user"} { // TODO not json.
 		t.Run(bad, func(t *testing.T) {
 			assert := require.New(t)
 
@@ -64,13 +67,18 @@ func TestGetReposBad(t *testing.T) {
 }
 
 func TestGetRepos(t *testing.T) {
+	assert := require.New(t)
+	_, file, _, _ := runtime.Caller(0)
+	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "repos_test.json"))
+	assert.NoError(err)
+
 	for _, no := range []string{"forks", "public", "private", ""} {
 		t.Run(no, func(t *testing.T) {
 			assert := require.New(t)
 
 			// HTTP response.
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// TODO
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Write(reply)
 			}))
 			defer ts.Close()
 
@@ -81,7 +89,7 @@ func TestGetRepos(t *testing.T) {
 				var err error
 				repos, err = GetRepos("", "", ts.URL, no == "public", no == "private", no == "forks")
 				assert.NoError(err)
-				assert.Empty(repos)
+				assert.NotEmpty(repos)
 			})
 
 			// Verify log.
