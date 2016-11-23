@@ -62,3 +62,35 @@ func TestGetReposBad(t *testing.T) {
 	}
 
 }
+
+func TestGetRepos(t *testing.T) {
+	for _, no := range []string{"forks", "public", "private", ""} {
+		t.Run(no, func(t *testing.T) {
+			assert := require.New(t)
+
+			// HTTP response.
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				// TODO
+			}))
+			defer ts.Close()
+
+			// Run.
+			var repos []Repository
+			stdout, stderr, err := testUtils.WithCapSys(func() {
+				testUtils.ResetLogger()
+				var err error
+				repos, err = GetRepos("", "", ts.URL, no == "public", no == "private", no == "forks")
+				assert.NoError(err)
+				assert.Empty(repos)
+			})
+
+			// Verify log.
+			assert.NoError(err)
+			assert.Empty(stdout)
+			assert.Empty(stderr)
+
+			// Verify repos.
+			// TODO
+		})
+	}
+}
