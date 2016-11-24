@@ -26,6 +26,14 @@ func Main(argv []string) int {
 
 	// TODO.
 	config.GetLogger().Infof("%v", cfg)
+
+	/*
+	 TODO:
+	 Maybe a map: map[clone_dir_string]GlobalRepo
+	 Since queries are done in series, have those query funcs check for existing keys and add '(1)' or something.
+	 Issues and wikis are cloned independently as separate repos by workers.
+	 Can downloads be cloned? If not download after cloning. Or maybe by a worker? May be a lot.
+	*/
 	return 0
 }
 
