@@ -8,7 +8,9 @@ import (
 	"github.com/google/go-github/github"
 )
 
-var _reValidFilename = regexp.MustCompile(`[^a-zA-Z0-9_.-]*`)
+const _maxName = 250
+
+var _reValidFilename = regexp.MustCompile("[^a-zA-Z0-9_.-]*")
 
 // Repository represents one GitHub repository or gist in API responses.
 type Repository struct {
@@ -21,29 +23,56 @@ type Repository struct {
 type Repositories map[string]Repository
 
 // Contains returns true if key (repo name) is already in the map.
+//
+// :param name: Key to lookup in map.
 func (r Repositories) Contains(name string) bool {
 	_, ok := r[name]
 	return ok
 }
 
-// Add handles collisions and adding additional repositories to the map.
-func (r Repositories) Add(repo *github.Repository) {
-	truncate := len(*repo.Name)
-	if truncate > 250 {
-		truncate = 250
-	}
-	name := _reValidFilename.ReplaceAllLiteralString(*repo.Name, "_")[:truncate]
+func (r Repositories) mitigate(name string) string {
 	if r.Contains(name) {
-		// Mitigate collision.
 		p := 1
 		for ; r.Contains(name + strconv.Itoa(p)); p++ {
 		}
 		name += strconv.Itoa(p)
 	}
+	return name
+}
+
+// Add handles collisions and adding additional repositories to the map.
+//
+// :param repo: github.Repository struct to read.
+func (r Repositories) Add(repo *github.Repository) {
+	// Derive multi-platform-safe file name from repo name.
+	name := _reValidFilename.ReplaceAllLiteralString(*repo.Name, "_")
+	if len(name) > _maxName {
+		name = name[:_maxName]
+	}
+	name = r.mitigate(name) // Mitigate clone directory name collision.
 
 	// Add to map.
-	r[name] = Repository{*repo.GitURL, repo.PushedAt.Time, *repo.Size}
+	r[name] = Repository{
+		GitURL:   *repo.GitURL,
+		PushedAt: repo.PushedAt.Time,
+		Size:     *repo.Size,
+	}
+	if !*repo.HasWiki {
+		return
+	}
 
-	// TODO handle wiki
-	// TODO handle issues
+	// Add wiki repo.
+	name = r.mitigate(name + ".wiki")
+	url := *repo.GitURL
+	url = url[:len(url)-4] + ".wiki.git"
+	r[name] = Repository{
+		GitURL:   url,
+		PushedAt: repo.PushedAt.Time,
+		Size:     *repo.Size,
+	}
 }
+
+// TODO Have GetRepos() and GetGists() be pointer receiver functions for user/token/apiurl. That struct will go here.
+// TODO Also include initialized Repositories map as a struct field. Or maybe not since that's written to.
+// TODO Just pass Repositories, issues, downloads map[name.TYPE string][]string to functions. Only return error.
+// TODO test this file (Contains/mitigate/Add logic).
