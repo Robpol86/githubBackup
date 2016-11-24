@@ -25,6 +25,7 @@ func prompt(message, answer string, noPrompt bool) (string, error) {
 		log.Debug(err.Error())
 		return "", err
 	}
+	fmt.Println()
 
 	return strings.TrimSpace(string(input)), nil
 }
