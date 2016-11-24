@@ -1,5 +1,5 @@
-hash: 8e1ad0048da13b012b2ee04dc722dc51f33c46544ffb2b1c28df42a1d2a635f4
-updated: 2016-11-16T08:41:08.168732606-08:00
+hash: 78d8ceffbbf52364f5e857ba8bb360f12ccceaaadbd7b048c3cfbb5881ceaf17
+updated: 2016-11-24T14:07:37.545908823-08:00
 imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
@@ -9,13 +9,17 @@ imports:
   version: e8bd909fb9f7fa8714d4a075b23eac863615103c
 - name: github.com/Sirupsen/logrus
   version: d26492970760ca5d33129d2d799e34be5c4782eb
+- name: golang.org/x/crypto
+  version: ede567c8e044a5913dad1d1af3696d9da953104c
+  subpackages:
+  - ssh/terminal
 - name: golang.org/x/sys
   version: b699b7032584f0953262cb2788a0ca19bb494703
   subpackages:
   - unix
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 2df174808ee097f90d259e432cc04442cf60be21
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
