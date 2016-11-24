@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/Robpol86/githubBackup/api"
 	"github.com/Robpol86/githubBackup/config"
 )
 
@@ -15,17 +15,25 @@ import (
 func Main(argv []string) int {
 	// Initialize configuration.
 	cfg, err := config.NewConfig(argv)
+	log := config.GetLogger()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to initialize configuration: "+err.Error())
+		log.Errorf("Failed to initialize configuration: %s", err.Error())
 		return 2
 	}
 	if err := config.SetupLogging(cfg.Verbose, cfg.Quiet, cfg.NoColors, false, cfg.LogFile); err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to setup logging: "+err.Error())
+		log.Errorf("Failed to setup logging: %s", err.Error())
 		return 2
 	}
 
+	// Query API.
+	ghAPI, err := api.NewAPI(cfg, "")
+	if err != nil {
+		log.Errorf("Not querying GitHub API: %s", err.Error())
+		return 1
+	}
+
 	// TODO.
-	config.GetLogger().Infof("%v", cfg)
+	log.Infof("%v", ghAPI)
 	return 0
 }
 

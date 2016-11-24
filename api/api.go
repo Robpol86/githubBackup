@@ -46,7 +46,7 @@ type API struct {
 // :param config: Config struct value with options from the CLI.
 //
 // :param testTokenAnswer: For testing. Don't prompt for token, use this value instead.
-func NewAPI(config config.Config, testTokenAnswer string) (*API, error) {
+func NewAPI(config config.Config, testTokenAnswer string) (API, error) {
 	api := API{
 		NoForks:   config.NoForks,
 		NoPrivate: config.NoPrivate,
@@ -69,13 +69,13 @@ func NewAPI(config config.Config, testTokenAnswer string) (*API, error) {
 		api.Token, err = prompt(message, testTokenAnswer, config.NoPrompt)
 		if api.User == "" {
 			if err != nil {
-				return nil, fmt.Errorf("failed reading stdin for token: %s", err.Error())
+				return API{}, fmt.Errorf("failed reading stdin for token: %s", err.Error())
 			}
 			if api.Token == "" {
-				return nil, errors.New("no token or user given, unable to query")
+				return API{}, errors.New("no token or user given, unable to query")
 			}
 		}
 	}
 
-	return &api, nil
+	return api, nil
 }

@@ -248,7 +248,7 @@ func TestSetupLoggingLogFileError(t *testing.T) {
 			assert.Contains(stderr, "failed to open logfile")
 
 			// Verify hooks.
-			assert.True(hasLogFileHook(logrus.StandardLogger().Hooks))
+			assert.False(hasLogFileHook(logrus.StandardLogger().Hooks))
 		})
 	}
 }

@@ -134,6 +134,20 @@ func SetupLogging(verbose, quiet, disableColors, forceColors bool, logFile strin
 		default:
 			err = hook.error
 		}
+	} else {
+		return
 	}
+
+	// Hook failed, removing it.
+	logger := logrus.StandardLogger()
+	for level := range logger.Hooks {
+		for i := len(logger.Hooks[level]) - 1; i >= 0; i-- {
+			switch logger.Hooks[level][i].(type) {
+			case *logFileHook:
+				logger.Hooks[level] = append(logger.Hooks[level][:i], logger.Hooks[level][i+1:]...)
+			}
+		}
+	}
+
 	return
 }
