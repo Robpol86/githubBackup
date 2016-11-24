@@ -7,7 +7,7 @@ import (
 // Version is the semantic version of the program.
 const Version = "0.0.1"
 
-const usage = `Backup all of your GitHub repos (with issues/wikis) and Gists.
+const usage = `Backup all of your GitHub repos (with wikis) and Gists.
 
 Clone all of your public and private repos into individual local directories in
 the DESTINATION directory. Does a mirror clone so all branches and tags are
@@ -17,21 +17,28 @@ Also downloads all of your GitHub Issues and Wiki pages, along with all of your
 GitHub Gists. Each Gist is its own Git repo so each one will be cloned to their
 own individual directory locally.
 
+If the --user option is specified then that users' repos/gists will be backed
+up instead of the authenticated users'. When specified the personal API token
+is optional.
+
 Usage:
-    githubBackup [options] USERNAME DESTINATION
+    githubBackup [options] DESTINATION
     githubBackup -h | --help
     githubBackup -V | --version
 
 Options:
     -C --no-colors      Disable colored log levels and field keys.
+    -F --no-forks	Skip backing up forked repos.
     -G --no-gist        Skip backing up your GitHub Gists.
     -h --help           Show this screen.
-    -I --no-issues      Skip backing up your repo issues.
+    -I --no-private     Skip backing up your private repos and private Gists.
     -l FILE --log=FILE  Log output to file.
     -P --no-public      Skip backing up your public repos and public Gists.
     -q --quiet          Don't print anything to stdout/stderr.
     -R --no-repos       Skip backing up your GitHub repos.
-    -T --no-private     Skip backing up your private repos and private Gists.
+    -t TKN --token=TKN  Use this GitHub personal access token (implies -T).
+    -T --no-prompt	Skip prompting for a GitHub personal access token.
+    -u USER --user=USER GitHub user to lookup.
     -v --verbose        Debug logging.
     -V --version        Show version and exit.
     -w --overwrite      Do git reset on existing directories.
@@ -53,20 +60,23 @@ func parseBool(value interface{}) bool {
 }
 
 // Config holds parsed data from command line arguments.
-type Config struct {
+type Config struct { // Sorted by docopt short option names above.
+	NoColors  bool
+	NoForks   bool
+	NoGist    bool
+	NoPrivate bool
+	LogFile   string
+	NoPublic  bool
+	Quiet     bool
+	NoRepos   bool
+	Token     string
+	NoPrompt  bool
+	User      string
+	Verbose   bool
+	Overwrite bool
+	NoWikis   bool
+
 	Destination string
-	LogFile     string
-	NoColors    bool
-	NoGist      bool
-	NoIssues    bool
-	NoPrivate   bool
-	NoPublic    bool
-	NoRepos     bool
-	NoWikis     bool
-	Overwrite   bool
-	Quiet       bool
-	Username    string
-	Verbose     bool
 }
 
 // NewConfig populates the struct with data read from command line arguments using docopt.
@@ -80,20 +90,23 @@ func NewConfig(argv []string) (Config, error) {
 	}
 
 	// Populate struct.
-	config := Config{
+	config := Config{ // Sorted by Config struct field order above.
+		NoColors:  parseBool(parsed["--no-colors"]),
+		NoForks:   parseBool(parsed["--no-forks"]),
+		NoGist:    parseBool(parsed["--no-gist"]),
+		NoPrivate: parseBool(parsed["--no-private"]),
+		LogFile:   parseString(parsed["--log"]),
+		NoPublic:  parseBool(parsed["--no-public"]),
+		Quiet:     parseBool(parsed["--quiet"]),
+		NoRepos:   parseBool(parsed["--no-repos"]),
+		Token:     parseString(parsed["--token"]),
+		NoPrompt:  parseBool(parsed["--no-prompt"]),
+		User:      parseString(parsed["--user"]),
+		Verbose:   parseBool(parsed["--verbose"]),
+		Overwrite: parseBool(parsed["--overwrite"]),
+		NoWikis:   parseBool(parsed["--no-wikis"]),
+
 		Destination: parseString(parsed["DESTINATION"]),
-		LogFile:     parseString(parsed["--log"]),
-		NoColors:    parseBool(parsed["--no-colors"]),
-		NoGist:      parseBool(parsed["--no-gist"]),
-		NoIssues:    parseBool(parsed["--no-issues"]),
-		NoPrivate:   parseBool(parsed["--no-private"]),
-		NoPublic:    parseBool(parsed["--no-public"]),
-		NoRepos:     parseBool(parsed["--no-repos"]),
-		NoWikis:     parseBool(parsed["--no-wikis"]),
-		Overwrite:   parseBool(parsed["--overwrite"]),
-		Quiet:       parseBool(parsed["--quiet"]),
-		Username:    parseString(parsed["USERNAME"]),
-		Verbose:     parseBool(parsed["--verbose"]),
 	}
 	return config, nil
 }
