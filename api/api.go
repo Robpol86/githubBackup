@@ -12,6 +12,26 @@ const _maxName = 250
 
 var _reValidFilename = regexp.MustCompile("[^a-zA-Z0-9_.-]*")
 
+type Api struct {
+	// User is a GitHub username to query repos and gists for. If empty the authenticated user is used instead.
+	User string
+
+	// Token is the GitHub personal access token used for private repos. If empty only public repos are queried.
+	Token string
+
+	// NoPublic skips pubic repos and gists.
+	NoPublic bool
+
+	// NoPrivate skips private repos and gists.
+	NoPrivate bool
+
+	// NoForks skips forked repos.
+	NoForks bool
+
+	// URL is the GitHub API url to query. Only used for testing. Leave blank to use the url provided by go-github.
+	URL string
+}
+
 // Repository represents one GitHub repository or gist in API responses.
 type Repository struct {
 	GitURL   string

@@ -14,58 +14,47 @@ import (
 
 // GetRepos retrieves the list of public and optional private GitHub repos on the user's account.
 //
-// :param user: Get repositories for this user. If blank username is derived from token.
-//
-// :param token: API token for authentication. Required if user is blank.
-//
-// :param apiURL: GitHub API url to query. For testing. Leave blank for default.
-//
-// :param noPublic: Skip public repos.
-//
-// :param noPrivate: Skip private repos.
-//
-// :param noForks: Skip forked repos.
-func GetRepos(user, token, apiURL string, noPublic, noPrivate, noForks bool) (repositories Repositories, err error) {
+// :param repositories: Already-initialized Repositories map to add repos to.
+func (a *Api) GetRepos(repositories Repositories) error {
 	log := config.GetLogger()
 
 	// Setup HTTP client.
 	var httpClient *http.Client
-	if token != "" {
-		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	if a.Token != "" {
+		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: a.Token})
 		httpClient = oauth2.NewClient(oauth2.NoContext, tokenSource)
 	}
 	client := github.NewClient(httpClient)
-	if apiURL != "" {
-		client.BaseURL, _ = url.Parse(apiURL)
+	if a.URL != "" {
+		client.BaseURL, _ = url.Parse(a.URL)
 	}
 
 	// Configure request options.
 	var options *github.RepositoryListOptions
-	if noPrivate {
+	if a.NoPrivate {
 		options = &github.RepositoryListOptions{Visibility: "public"}
-	} else if noPublic {
+	} else if a.NoPublic {
 		options = &github.RepositoryListOptions{Visibility: "private"}
 	}
 
 	// Query API.
-	repos, response, err := client.Repositories.List(user, options)
+	repos, response, err := client.Repositories.List(a.User, options)
 	log.Debugf("GitHub API response: %v", response)
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "invalid character ") {
 			err = errors.New("invalid JSON response from server")
 		}
 		log.Errorf("Failed to query for repos: %s", err.Error())
-		return
+		return err
 	}
 
 	// Parse.
-	repositories = make(Repositories)
 	for _, repo := range repos {
-		if (noForks && *repo.Fork) || (noPublic && !*repo.Private) || (noPrivate && *repo.Private) {
+		if (a.NoForks && *repo.Fork) || (a.NoPublic && !*repo.Private) || (a.NoPrivate && *repo.Private) {
 			continue
 		}
 		repositories.Add(repo)
 	}
 
-	return
+	return nil
 }
