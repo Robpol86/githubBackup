@@ -5,26 +5,12 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 
 	"github.com/Robpol86/githubBackup/config"
 )
-
-// Repository represents one GitHub repository in API responses.
-type Repository struct {
-	Fork         bool
-	GitURL       string
-	HasDownloads bool
-	HasIssues    bool
-	HasWiki      bool
-	Name         string
-	Private      bool
-	PushedAt     time.Time
-	Size         int
-}
 
 // GetRepos retrieves the list of public and optional private GitHub repos on the user's account.
 //
@@ -39,7 +25,7 @@ type Repository struct {
 // :param noPrivate: Skip private repos.
 //
 // :param noForks: Skip forked repos.
-func GetRepos(user, token, apiURL string, noPublic, noPrivate, noForks bool) (repositories []Repository, err error) {
+func GetRepos(user, token, apiURL string, noPublic, noPrivate, noForks bool) (repositories Repositories, err error) {
 	log := config.GetLogger()
 
 	// Setup HTTP client.
@@ -73,21 +59,12 @@ func GetRepos(user, token, apiURL string, noPublic, noPrivate, noForks bool) (re
 	}
 
 	// Parse.
+	repositories = make(Repositories)
 	for _, repo := range repos {
 		if (noForks && *repo.Fork) || (noPublic && !*repo.Private) || (noPrivate && *repo.Private) {
 			continue
 		}
-		repositories = append(repositories, Repository{
-			Fork:         *repo.Fork,
-			GitURL:       *repo.GitURL,
-			HasDownloads: *repo.HasDownloads,
-			HasIssues:    *repo.HasIssues,
-			HasWiki:      *repo.HasWiki,
-			Name:         *repo.Name,
-			Private:      *repo.Private,
-			PushedAt:     repo.PushedAt.Time,
-			Size:         *repo.Size,
-		})
+		repositories.Add(repo)
 	}
 
 	return

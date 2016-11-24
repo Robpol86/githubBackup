@@ -95,7 +95,7 @@ func TestGetRepos(t *testing.T) {
 			defer ts.Close()
 
 			// Run.
-			var repos []Repository
+			var repos Repositories
 			stdout, stderr, err := testUtils.WithCapSys(func() {
 				testUtils.ResetLogger()
 				var err error
