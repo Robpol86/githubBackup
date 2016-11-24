@@ -126,15 +126,7 @@ func SetupLogging(verbose, quiet, disableColors, forceColors bool, logFile strin
 
 	// Emit debug log and check for errors.
 	GetLogger().Infof("githubBackup %s", Version)
-	if hook.error != nil {
-		s := strings.Split(hook.error.Error(), ":")
-		switch s[len(s)-1] {
-		case " no such file or directory", " The system cannot find the path specified.":
-			err = fmt.Errorf("%s: no such directory", filepath.Dir(logFile))
-		default:
-			err = hook.error
-		}
-	} else {
+	if hook.error == nil {
 		return
 	}
 
@@ -147,6 +139,15 @@ func SetupLogging(verbose, quiet, disableColors, forceColors bool, logFile strin
 				logger.Hooks[level] = append(logger.Hooks[level][:i], logger.Hooks[level][i+1:]...)
 			}
 		}
+	}
+
+	// Touch up error so the user knows what's going on.
+	s := strings.Split(hook.error.Error(), ":")
+	switch s[len(s)-1] {
+	case " no such file or directory", " The system cannot find the path specified.":
+		err = fmt.Errorf("%s: no such directory", filepath.Dir(logFile))
+	default:
+		err = hook.error
 	}
 
 	return
