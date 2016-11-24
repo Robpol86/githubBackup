@@ -27,12 +27,12 @@ func TestGetReposBad(t *testing.T) {
 	errorMsg := map[string]string{
 		"auth": "GET %s/user/repos: 401 Bad credentials []",
 		"user": "GET %s/users/unknown/repos: 404 Not Found []",
-		"json": "Invalid JSON response from server.",
+		"json": "invalid JSON response from server",
 	}
 	contains := map[string]string{
 		"auth": "Failed to query for repos: GET %s/user/repos: 401 Bad credentials",
 		"user": "Failed to query for repos: GET %s/users/unknown/repos: 404 Not Found",
-		"json": "Failed to query for repos: Invalid JSON response from server.",
+		"json": "Failed to query for repos: invalid JSON response from server",
 	}
 
 	for _, bad := range []string{"auth", "user", "json"} {

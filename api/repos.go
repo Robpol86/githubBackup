@@ -52,7 +52,7 @@ func GetRepos(user, token, apiURL string, noPublic, noPrivate, noForks bool) (re
 	log.Debugf("GitHub API response: %v", response)
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "invalid character ") {
-			err = errors.New("Invalid JSON response from server.")
+			err = errors.New("invalid JSON response from server")
 		}
 		log.Errorf("Failed to query for repos: %s", err.Error())
 		return

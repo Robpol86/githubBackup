@@ -1,5 +1,5 @@
 hash: 7f49a3d884926f84d7edef61a1db4f90bd4ce76d13964233baa00be3d2a7bcc0
-updated: 2016-11-21T21:08:54.553790366-08:00
+updated: 2016-11-23T20:58:37.947952608-08:00
 imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
@@ -45,11 +45,9 @@ imports:
   - urlfetch
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 2df174808ee097f90d259e432cc04442cf60be21
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
-- name: github.com/jarcoal/httpmock
-  version: 145b10d659265440f062c31ea15326166bae56ee
 - name: github.com/pmezard/go-difflib
   version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
   subpackages:
