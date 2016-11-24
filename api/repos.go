@@ -1,8 +1,10 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/google/go-github/github"
@@ -60,6 +62,9 @@ func GetRepos(user, token, apiURL string, noPublic, noPrivate, noForks bool) (re
 	repos, response, err := client.Repositories.List(user, options)
 	log.Debugf("GitHub API response: %v", response)
 	if err != nil {
+		if strings.HasPrefix(err.Error(), "invalid character ") {
+			err = errors.New("Invalid JSON response from server.")
+		}
 		log.Errorf("Failed to query for repos: %s", err.Error())
 		return
 	}
