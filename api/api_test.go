@@ -6,6 +6,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewAPI(t *testing.T) {
+func TestNewAPIWithToken(t *testing.T) {
+	assert := require.New(t)
 
+	assert.True(true) // TODO.
 }

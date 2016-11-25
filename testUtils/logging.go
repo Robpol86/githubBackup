@@ -31,3 +31,15 @@ func LogMsgs() {
 	logger.Error("Sample error 1.")
 	logger.WithFields(logrus.Fields{"a": "b", "c": 10}).Error("Sample error 2.")
 }
+
+type setupLogging func(bool, bool, bool, bool, string) error
+
+// WithDebugLogging wraps around WithCapSys(). It enables debug logging to console before calling the input function.
+func WithDebugLogging(sl setupLogging, function func()) (stdout, stderr string, err error) {
+	stdout, stderr, err = WithCapSys(func() {
+		ResetLogger()
+		sl(true, false, true, false, "")
+		function()
+	})
+	return
+}
