@@ -11,9 +11,8 @@ import (
 	"github.com/Robpol86/githubBackup/config"
 )
 
-func prompt(message, answer string, noPrompt bool) (string, error) { // TODO move answer evaluation right by input.
-	// TODO move noPrompt to NewAPI().
-	if noPrompt || answer != "" {
+func prompt(message, answer string) (string, error) { // TODO move answer evaluation right by input.
+	if answer != "" {
 		return answer, nil
 	}
 
@@ -45,11 +44,13 @@ type API struct {
 
 // NewAPI reads config data and conditionally prompts for the API token (as a password prompt).
 //
+// Always prompt for token if not specified. There are higher API limits for authenticated users.
+//
 // :param config: Config struct value with options from the CLI.
 //
 // :param testTokenAnswer: For testing. Don't prompt for token, use this value instead.
-func NewAPI(config config.Config, testTokenAnswer string) (API, error) {
-	api := API{
+func NewAPI(config config.Config, testTokenAnswer string) (api API, err error) {
+	api = API{
 		NoForks:   config.NoForks,
 		NoPrivate: config.NoPrivate,
 		NoPublic:  config.NoPublic,
@@ -57,27 +58,29 @@ func NewAPI(config config.Config, testTokenAnswer string) (API, error) {
 		Token:     config.Token,
 		User:      config.User,
 	}
+	if api.Token != "" {
+		return
+	}
 
-	// Determine if we should prompt user for token. Always prompt (optional or mandatory regardless) for token if
-	// not specified in --token since there are higher API limits for authenticated users.
-	if api.Token == "" {
-		var err error
+	// Prompt.
+	if !config.NoPrompt {
 		var message string
 		if api.User == "" {
 			message = "Enter your GitHub personal access token: "
 		} else {
 			message = "GitHub personal access token (anonymous auth if blank): "
 		}
-		api.Token, err = prompt(message, testTokenAnswer, config.NoPrompt)
-		if api.User == "" {
-			if err != nil {
-				return API{}, fmt.Errorf("failed reading stdin for token: %s", err.Error())
-			}
-			if api.Token == "" {
-				return API{}, errors.New("no token or user given, unable to query")
-			}
+		api.Token, err = prompt(message, testTokenAnswer)
+	}
+
+	// Verify.
+	if api.User == "" {
+		if err != nil {
+			err = fmt.Errorf("failed reading stdin for token: %s", err.Error())
+		} else if api.Token == "" {
+			err = errors.New("no token or user given, unable to query")
 		}
 	}
 
-	return api, nil
+	return
 }
