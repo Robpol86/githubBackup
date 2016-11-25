@@ -11,23 +11,27 @@ import (
 	"github.com/Robpol86/githubBackup/config"
 )
 
-func prompt(message, answer string) (string, error) { // TODO move answer evaluation right by input.
-	if answer != "" {
-		return answer, nil
-	}
-
+func prompt(message, testTokenAnswer string) (input string, err error) {
 	log := config.GetLogger()
 	log.Debug("Prompting for password with prompt: %s", message)
 	fmt.Print(message)
-	input, err := terminal.ReadPassword(int(syscall.Stdin))
+
+	if testTokenAnswer != "" {
+		input = testTokenAnswer
+	} else {
+		var inputBytes []byte
+		inputBytes, err = terminal.ReadPassword(int(syscall.Stdin))
+		input = strings.TrimSpace(string(inputBytes))
+	}
+
 	if err != nil {
 		fmt.Println("failed to read stdin")
 		log.Debug(err.Error())
-		return "", err
+	} else {
+		fmt.Println()
 	}
-	fmt.Println()
 
-	return strings.TrimSpace(string(input)), nil
+	return
 }
 
 // API holds fields and functions related to querying the GitHub API.
