@@ -18,12 +18,13 @@ GitHub Gists. Each Gist is its own Git repo so each one will be cloned to their
 own individual directory locally.
 
 Usage:
-    githubBackup [options] USERNAME DESTINATION
+    githubBackup [options] DESTINATION
     githubBackup -h | --help
     githubBackup -V | --version
 
 Options:
     -C --no-colors      Disable colored log levels and field keys.
+    -F --no-forks       Skip backing up forked repos.
     -G --no-gist        Skip backing up your GitHub Gists.
     -h --help           Show this screen.
     -I --no-issues      Skip backing up your repo issues.
@@ -32,6 +33,7 @@ Options:
     -q --quiet          Don't print anything to stdout/stderr.
     -R --no-repos       Skip backing up your GitHub repos.
     -T --no-private     Skip backing up your private repos and private Gists.
+    -u USER --user=USER GitHub user to lookup.
     -v --verbose        Debug logging.
     -V --version        Show version and exit.
     -w --overwrite      Do git reset on existing directories.
@@ -53,20 +55,22 @@ func parseBool(value interface{}) bool {
 }
 
 // Config holds parsed data from command line arguments.
-type Config struct {
+type Config struct { // Sorted by docopt short option names above.
+	NoColors  bool
+	NoForks   bool
+	NoGist    bool
+	NoIssues  bool
+	LogFile   string
+	NoPublic  bool
+	Quiet     bool
+	NoRepos   bool
+	NoPrivate bool
+	User      string
+	Verbose   bool
+	Overwrite bool
+	NoWikis   bool
+
 	Destination string
-	LogFile     string
-	NoColors    bool
-	NoGist      bool
-	NoIssues    bool
-	NoPrivate   bool
-	NoPublic    bool
-	NoRepos     bool
-	NoWikis     bool
-	Overwrite   bool
-	Quiet       bool
-	Username    string
-	Verbose     bool
 }
 
 // NewConfig populates the struct with data read from command line arguments using docopt.
@@ -80,20 +84,22 @@ func NewConfig(argv []string) (Config, error) {
 	}
 
 	// Populate struct.
-	config := Config{
+	config := Config{ // Sorted by Config struct field order above.
+		NoColors:  parseBool(parsed["--no-colors"]),
+		NoForks:   parseBool(parsed["--no-forks"]),
+		NoGist:    parseBool(parsed["--no-gist"]),
+		NoIssues:  parseBool(parsed["--no-issues"]),
+		LogFile:   parseString(parsed["--log"]),
+		NoPublic:  parseBool(parsed["--no-public"]),
+		Quiet:     parseBool(parsed["--quiet"]),
+		NoRepos:   parseBool(parsed["--no-repos"]),
+		NoPrivate: parseBool(parsed["--no-private"]),
+		User:      parseString(parsed["--user"]),
+		Verbose:   parseBool(parsed["--verbose"]),
+		Overwrite: parseBool(parsed["--overwrite"]),
+		NoWikis:   parseBool(parsed["--no-wikis"]),
+
 		Destination: parseString(parsed["DESTINATION"]),
-		LogFile:     parseString(parsed["--log"]),
-		NoColors:    parseBool(parsed["--no-colors"]),
-		NoGist:      parseBool(parsed["--no-gist"]),
-		NoIssues:    parseBool(parsed["--no-issues"]),
-		NoPrivate:   parseBool(parsed["--no-private"]),
-		NoPublic:    parseBool(parsed["--no-public"]),
-		NoRepos:     parseBool(parsed["--no-repos"]),
-		NoWikis:     parseBool(parsed["--no-wikis"]),
-		Overwrite:   parseBool(parsed["--overwrite"]),
-		Quiet:       parseBool(parsed["--quiet"]),
-		Username:    parseString(parsed["USERNAME"]),
-		Verbose:     parseBool(parsed["--verbose"]),
 	}
 	return config, nil
 }

@@ -16,16 +16,19 @@ func Main(argv []string) int {
 	// Initialize configuration.
 	cfg, err := config.NewConfig(argv)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to initialize configuration: "+err.Error())
+		// Shouldn't really happen since docopt does os.Exit().
+		fmt.Fprintln(os.Stderr, "ERROR: Failed to initialize configuration: "+err.Error())
 		return 2
 	}
-	if err := config.SetupLogging(cfg.Verbose, cfg.Quiet, cfg.NoColors, false, cfg.LogFile); err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to setup logging: "+err.Error())
+	err = config.SetupLogging(cfg.Verbose, cfg.Quiet, cfg.NoColors, false, cfg.LogFile)
+	log := config.GetLogger() // SetupLogging only errors on log file setup and removes log hook. Logging is safe.
+	if err != nil {
+		log.Errorf("ERROR: Failed to setup logging: %s", err.Error())
 		return 2
 	}
 
 	// TODO.
-	config.GetLogger().Infof("%v", cfg)
+	log.Infof("%v", cfg)
 	return 0
 }
 
