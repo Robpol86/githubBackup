@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/Robpol86/githubBackup/api"
@@ -15,13 +16,15 @@ import (
 func Main(argv []string) int {
 	// Initialize configuration.
 	cfg, err := config.NewConfig(argv)
-	log := config.GetLogger()
 	if err != nil {
-		log.Errorf("Failed to initialize configuration: %s", err.Error())
+		// Shouldn't really happen since docopt does os.Exit().
+		fmt.Fprintln(os.Stderr, "ERROR: Failed to initialize configuration: "+err.Error())
 		return 2
 	}
-	if err := config.SetupLogging(cfg.Verbose, cfg.Quiet, cfg.NoColors, false, cfg.LogFile); err != nil {
-		log.Errorf("Failed to setup logging: %s", err.Error())
+	err = config.SetupLogging(cfg.Verbose, cfg.Quiet, cfg.NoColors, false, cfg.LogFile)
+	log := config.GetLogger() // SetupLogging only errors on log file setup and removes log hook. Logging is safe.
+	if err != nil {
+		log.Errorf("ERROR: Failed to setup logging: %s", err.Error())
 		return 2
 	}
 
