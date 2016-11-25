@@ -7,6 +7,7 @@ import (
 
 	"github.com/Robpol86/logrus-custom-formatter"
 	"github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus/hooks/test"
 )
 
 // ReTimestamp is used for replacing actual timestamps from detailed logging output to a testable string instead.
@@ -14,8 +15,12 @@ var ReTimestamp = regexp.MustCompile(`^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{3}`)
 
 // ResetLogger re-initializes the global logrus logger so stdout/stderr changes are applied to it.
 // Otherwise after patching the streams logrus still points to the original file descriptor.
-func ResetLogger() {
-	*logrus.StandardLogger() = *logrus.New()
+func ResetLogger(logger ...*logrus.Logger) {
+	if len(logger) > 0 {
+		*logrus.StandardLogger() = *logger[0]
+	} else {
+		*logrus.StandardLogger() = *logrus.New()
+	}
 	log.SetOutput(os.Stderr)
 }
 
@@ -34,11 +39,14 @@ func LogMsgs() {
 
 type setupLogging func(bool, bool, bool, bool, string) error
 
-// WithDebugLogging wraps around WithCapSys(). It enables debug logging to console before calling the input function.
-func WithDebugLogging(sl setupLogging, function func()) (stdout, stderr string, err error) {
+// WithLogging wraps around WithCapSys(). It enables a test logger before calling the input function.
+func WithLogging(function func()) (hook *test.Hook, stdout, stderr string, err error) {
+	defer ResetLogger()
 	stdout, stderr, err = WithCapSys(func() {
-		ResetLogger()
-		sl(true, false, true, false, "")
+		var logger *logrus.Logger
+		logger, hook = test.NewNullLogger()
+		ResetLogger(logger)
+		*logrus.StandardLogger() = *logger
 		function()
 	})
 	return
