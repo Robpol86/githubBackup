@@ -11,7 +11,8 @@ import (
 	"github.com/Robpol86/githubBackup/config"
 )
 
-func prompt(message, answer string, noPrompt bool) (string, error) {
+func prompt(message, answer string, noPrompt bool) (string, error) { // TODO move answer evaluation right by input.
+	// TODO move noPrompt to NewAPI().
 	if noPrompt || answer != "" {
 		return answer, nil
 	}
