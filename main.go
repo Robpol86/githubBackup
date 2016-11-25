@@ -25,7 +25,7 @@ func Main(argv []string) int {
 		return 2
 	}
 
-	// Query API. // TODO investigate --no-prompt
+	// Query API.
 	ghAPI, err := api.NewAPI(cfg, "")
 	if err != nil {
 		log.Errorf("Not querying GitHub API: %s", err.Error())

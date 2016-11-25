@@ -28,7 +28,7 @@ Usage:
 
 Options:
     -C --no-colors      Disable colored log levels and field keys.
-    -F --no-forks	Skip backing up forked repos.
+    -F --no-forks       Skip backing up forked repos.
     -G --no-gist        Skip backing up your GitHub Gists.
     -h --help           Show this screen.
     -I --no-private     Skip backing up your private repos and private Gists.
@@ -37,7 +37,7 @@ Options:
     -q --quiet          Don't print anything to stdout/stderr.
     -R --no-repos       Skip backing up your GitHub repos.
     -t TKN --token=TKN  Use this GitHub personal access token (implies -T).
-    -T --no-prompt	Skip prompting for a GitHub personal access token.
+    -T --no-prompt      Skip prompting for a GitHub personal access token.
     -u USER --user=USER GitHub user to lookup.
     -v --verbose        Debug logging.
     -V --version        Show version and exit.
