@@ -113,29 +113,33 @@ type Repositories map[string]Repository
 // Add a GitHub repository to the map and handle valid directory names and collisions.
 //
 // :param repo: github.Repository struct to read.
-func (r Repositories) Add(repo *github.Repository) (name string, repository *Repository) {
+func (r Repositories) Add(dir string, repo *github.Repository) (string, *Repository) {
 	// Derive multi-platform-safe file name from repo name.
-	name = _reValidFilename.ReplaceAllLiteralString(*repo.Name, "_")
-	if len(name) > _maxName {
-		name = name[:_maxName]
+	if dir == "" {
+		dir = _reValidFilename.ReplaceAllLiteralString(*repo.Name, "_")
+		if len(dir) > _maxName {
+			dir = dir[:_maxName]
+		}
 	}
 
 	// Handle collisions.
-	if _, ok := r[name]; ok {
+	if _, ok := r[dir]; ok {
 		for i := 0; ; i++ {
-			newName := name + strconv.Itoa(i)
+			newName := dir + strconv.Itoa(i)
 			if _, ok = r[newName]; !ok {
-				name = newName
+				dir = newName
 				break
 			}
 		}
 	}
 
 	// Add to map.
-	repository.Name = *repo.Name
-	repository.GitURL = *repo.GitURL
-	repository.PushedAt = repo.PushedAt.Time
-	repository.Size = *repo.Size
-	r[name] = *repository
-	return
+	repository := Repository{
+		Name:     *repo.Name,
+		GitURL:   *repo.GitURL,
+		PushedAt: repo.PushedAt.Time,
+		Size:     *repo.Size,
+	}
+	r[dir] = repository
+	return dir, &repository
 }
