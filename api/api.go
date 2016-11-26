@@ -84,6 +84,8 @@ func NewAPI(config config.Config, testTokenAnswer string) (api API, err error) {
 		} else if api.Token == "" {
 			err = errors.New("no token or user given, unable to query")
 		}
+	} else {
+		err = nil // Errors from prompt() don't matter in optional mode.
 	}
 
 	return

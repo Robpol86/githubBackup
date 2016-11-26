@@ -59,3 +59,31 @@ func TestNewAPIPrompt(t *testing.T) {
 		})
 	}
 }
+
+func TestNewAPIError(t *testing.T) {
+	for _, user := range []string{"me", ""} {
+		t.Run(user, func(t *testing.T) {
+			assert := require.New(t)
+			logs, stdout, stderr, err := testUtils.WithLogging(func() {
+				api, err := NewAPI(config.Config{User: user}, "")
+				if user == "" {
+					m := "failed reading stdin for token: operation not supported by device"
+					assert.EqualError(err, m)
+				} else {
+					assert.NoError(err)
+				}
+				assert.Equal("", api.Token)
+			})
+			assert.Len(logs.Entries, 2)
+			assert.Equal("operation not supported by device", logs.LastEntry().Message)
+			if user == "" {
+				assert.Equal("Enter your GitHub personal access token: failed to read stdin\n", stdout)
+			} else {
+				m := "GitHub personal access token (anonymous auth if blank): failed to read stdin\n"
+				assert.Equal(m, stdout)
+			}
+			assert.Empty(stderr)
+			assert.NoError(err)
+		})
+	}
+}

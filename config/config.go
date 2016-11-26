@@ -34,7 +34,7 @@ Options:
     -I --no-private     Skip backing up your private repos and private Gists.
     -l FILE --log=FILE  Log output to file.
     -P --no-public      Skip backing up your public repos and public Gists.
-    -q --quiet          Don't print anything to stdout/stderr.
+    -q --quiet          Don't print anything to stdout/stderr (implies -T).
     -R --no-repos       Skip backing up your GitHub repos.
     -t TKN --token=TKN  Use this GitHub personal access token (implies -T).
     -T --no-prompt      Skip prompting for a GitHub personal access token.
@@ -108,5 +108,11 @@ func NewConfig(argv []string) (Config, error) {
 
 		Destination: parseString(parsed["DESTINATION"]),
 	}
+
+	// Implications.
+	if config.Quiet || config.Token != "" {
+		config.NoPrompt = true
+	}
+
 	return config, nil
 }
