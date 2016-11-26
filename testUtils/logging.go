@@ -46,7 +46,6 @@ func WithLogging(function func()) (hook *test.Hook, stdout, stderr string, err e
 		var logger *logrus.Logger
 		logger, hook = test.NewNullLogger()
 		ResetLogger(logger)
-		*logrus.StandardLogger() = *logger
 		function()
 	})
 	return

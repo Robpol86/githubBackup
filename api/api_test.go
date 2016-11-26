@@ -36,3 +36,25 @@ func TestNewAPINoPrompt(t *testing.T) {
 		})
 	}
 }
+
+func TestNewAPIPrompt(t *testing.T) {
+	for _, user := range []string{"me", ""} {
+		t.Run(user, func(t *testing.T) {
+			assert := require.New(t)
+			_, stdout, stderr, err := testUtils.WithLogging(func() {
+				api, err := NewAPI(config.Config{User: user}, "xyz")
+				assert.NoError(err)
+				assert.Equal("xyz", api.Token)
+			})
+			//assert.Len(logs.Entries, 1)
+			//assert.Equal(logrus.DebugLevel, logs.Entries[0].Level)
+			if user == "" {
+				assert.Equal("Enter your GitHub personal access token: \n", stdout)
+			} else {
+				assert.Equal("GitHub personal access token (anonymous auth if blank): \n", stdout)
+			}
+			assert.Empty(stderr)
+			assert.NoError(err)
+		})
+	}
+}
