@@ -31,7 +31,7 @@ func Main(argv []string) int {
 	// Query API.
 	ghAPI, err := api.NewAPI(cfg, "")
 	if err != nil {
-		log.Errorf("Not querying GitHub API: %s", err.Error())
+		log.Errorf("ERROR: Not querying GitHub API: %s", err.Error())
 		return 1
 	}
 
