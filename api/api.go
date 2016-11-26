@@ -3,13 +3,21 @@ package api
 import (
 	"errors"
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
+	"github.com/google/go-github/github"
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/Robpol86/githubBackup/config"
 )
+
+const _maxName = 250
+
+var _reValidFilename = regexp.MustCompile("[^a-zA-Z0-9_.-]*")
 
 func prompt(message, testTokenAnswer string) (input string, err error) {
 	log := config.GetLogger()
@@ -88,5 +96,46 @@ func NewAPI(config config.Config, testTokenAnswer string) (api API, err error) {
 		err = nil // Errors from prompt() don't matter in optional mode.
 	}
 
+	return
+}
+
+// Repository represents one git repository to clone.
+type Repository struct {
+	Name     string
+	GitURL   string
+	PushedAt time.Time
+	Size     int
+}
+
+// Repositories holds clone directory names as keys and repo clone info as values.
+type Repositories map[string]Repository
+
+// Add a GitHub repository to the map and handle valid directory names and collisions.
+//
+// :param repo: github.Repository struct to read.
+func (r Repositories) Add(repo *github.Repository) (name string, repository *Repository) {
+	// Derive multi-platform-safe file name from repo name.
+	name = _reValidFilename.ReplaceAllLiteralString(*repo.Name, "_")
+	if len(name) > _maxName {
+		name = name[:_maxName]
+	}
+
+	// Handle collisions.
+	if _, ok := r[name]; ok {
+		for i := 0; ; i++ {
+			newName := name + strconv.Itoa(i)
+			if _, ok = r[newName]; !ok {
+				name = newName
+				break
+			}
+		}
+	}
+
+	// Add to map.
+	repository.Name = *repo.Name
+	repository.GitURL = *repo.GitURL
+	repository.PushedAt = repo.PushedAt.Time
+	repository.Size = *repo.Size
+	r[name] = *repository
 	return
 }
