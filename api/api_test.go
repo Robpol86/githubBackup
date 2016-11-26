@@ -61,10 +61,22 @@ func TestNewAPIPrompt(t *testing.T) {
 	}
 }
 
+type ValidErrors []string
+
+func (v ValidErrors) get(msg string) (m string) {
+	for _, m = range v {
+		if strings.HasSuffix(msg, m) {
+			return
+		}
+	}
+	return
+}
+
 func TestNewAPIError(t *testing.T) {
-	validErrors := [...]string{
+	validErrors := ValidErrors{
 		"operation not supported by device",
 		"inappropriate ioctl for device",
+		"The handle is invalid.",
 	}
 
 	for _, user := range []string{"me", ""} {
@@ -74,13 +86,8 @@ func TestNewAPIError(t *testing.T) {
 			logs, stdout, stderr, err := testUtils.WithLogging(func() {
 				api, err := NewAPI(config.Config{User: user}, "")
 				if user == "" {
-					var i int
-					for i = 0; i < len(validErrors); i++ {
-						if strings.HasSuffix(err.Error(), validErrors[i]) {
-							break
-						}
-					}
-					assert.EqualError(err, "failed reading stdin for token: "+validErrors[i])
+					m := "failed reading stdin for token: " + validErrors.get(err.Error())
+					assert.EqualError(err, m)
 				} else {
 					assert.NoError(err)
 				}
@@ -88,13 +95,7 @@ func TestNewAPIError(t *testing.T) {
 			})
 
 			assert.Len(logs.Entries, 2)
-			var i int
-			for i = 0; i < len(validErrors); i++ {
-				if strings.HasSuffix(logs.LastEntry().Message, validErrors[i]) {
-					break
-				}
-			}
-			assert.Equal(validErrors[i], logs.LastEntry().Message)
+			assert.Equal(validErrors.get(logs.LastEntry().Message), logs.LastEntry().Message)
 
 			if user == "" {
 				assert.Equal("Enter your GitHub personal access token: failed to read stdin\n", stdout)
