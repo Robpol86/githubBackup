@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Robpol86/githubBackup/api"
 	"github.com/Robpol86/githubBackup/config"
 )
 
@@ -27,8 +28,15 @@ func Main(argv []string) int {
 		return 2
 	}
 
+	// Query API.
+	ghAPI, err := api.NewAPI(cfg, "")
+	if err != nil {
+		log.Errorf("ERROR: Not querying GitHub API: %s", err.Error())
+		return 1
+	}
+
 	// TODO.
-	log.Infof("%v", cfg)
+	log.Infof("%v", ghAPI)
 	return 0
 }
 

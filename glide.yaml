@@ -8,6 +8,9 @@ import:
   version: ~1.0.1
 - package: github.com/rifflock/lfshook
   version: ~1.2.0
+- package: golang.org/x/crypto
+  subpackages:
+  - ssh/terminal
 testImport:
 - package: github.com/stretchr/testify
   version: ~1.1.4
