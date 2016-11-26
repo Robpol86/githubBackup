@@ -3,6 +3,7 @@ package api
 import (
 	"testing"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Robpol86/githubBackup/config"
@@ -41,13 +42,13 @@ func TestNewAPIPrompt(t *testing.T) {
 	for _, user := range []string{"me", ""} {
 		t.Run(user, func(t *testing.T) {
 			assert := require.New(t)
-			_, stdout, stderr, err := testUtils.WithLogging(func() {
+			logs, stdout, stderr, err := testUtils.WithLogging(func() {
 				api, err := NewAPI(config.Config{User: user}, "xyz")
 				assert.NoError(err)
 				assert.Equal("xyz", api.Token)
 			})
-			//assert.Len(logs.Entries, 1)
-			//assert.Equal(logrus.DebugLevel, logs.Entries[0].Level)
+			assert.Len(logs.Entries, 1)
+			assert.Equal(logrus.DebugLevel, logs.Entries[0].Level)
 			if user == "" {
 				assert.Equal("Enter your GitHub personal access token: \n", stdout)
 			} else {

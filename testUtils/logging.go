@@ -39,12 +39,13 @@ func LogMsgs() {
 
 type setupLogging func(bool, bool, bool, bool, string) error
 
-// WithLogging wraps around WithCapSys(). It enables a test logger before calling the input function.
+// WithLogging wraps around WithCapSys(). It enables a test debug logger before calling the input function.
 func WithLogging(function func()) (hook *test.Hook, stdout, stderr string, err error) {
 	defer ResetLogger()
 	stdout, stderr, err = WithCapSys(func() {
 		var logger *logrus.Logger
 		logger, hook = test.NewNullLogger()
+		logger.Level = logrus.DebugLevel
 		ResetLogger(logger)
 		function()
 	})
