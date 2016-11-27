@@ -44,6 +44,7 @@ func (a *API) GetRepos(tasks Tasks) error {
 		// Create task.
 		task := Task{
 			Name:     *repo.Name,
+			Private:  *repo.Private,
 			PushedAt: repo.PushedAt.Time,
 			Size:     *repo.Size,
 
@@ -60,6 +61,7 @@ func (a *API) GetRepos(tasks Tasks) error {
 		// Add wiki as a separate repo.
 		if !a.NoWikis && *repo.HasWiki {
 			wikiTask := task.dup()
+			wikiTask.IsWiki = true
 			wikiTask.Name += ".wiki"
 			wikiTask.CloneURL = task.CloneURL[:len(task.CloneURL)-4] + ".wiki.git"
 			tasks[tasks.validDir(dir+".wiki")] = wikiTask
