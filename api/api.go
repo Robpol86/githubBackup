@@ -18,7 +18,7 @@ import (
 
 const _maxName = 250
 
-var _reValidFilename = regexp.MustCompile("[^a-zA-Z0-9_.-]*")
+var _reValidFilename = regexp.MustCompile("[^a-zA-Z0-9_.-]+")
 
 func prompt(message, testTokenAnswer string) (input string, err error) {
 	log := config.GetLogger()

@@ -121,15 +121,15 @@ func TestGetRepos(t *testing.T) {
 			var expected []string
 			switch no {
 			case "forks":
-				expected = []string{"appveyor-artifacts", "Documents", "Documents.wiki"}
+				expected = []string{"Documents", "Documents.wiki", "appveyor-artifacts"}
 			case "public":
 				expected = []string{"Documents", "Documents.wiki"}
 			case "private":
 				expected = []string{"appveyor-artifacts", "click_"}
 			case "wikis":
-				expected = []string{"appveyor-artifacts", "click_", "Documents"}
+				expected = []string{"Documents", "appveyor-artifacts", "click_"}
 			default:
-				expected = []string{"appveyor-artifacts", "click_", "Documents", "Documents.wiki"}
+				expected = []string{"Documents", "Documents.wiki", "appveyor-artifacts", "click_"}
 			}
 			assert.Equal(expected, repos.Keys(true))
 			// TODO
