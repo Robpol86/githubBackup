@@ -36,12 +36,14 @@ func prompt(message, testTokenAnswer string) (input string, err error) {
 
 // API holds fields and functions related to querying the GitHub API.
 type API struct {
-	NoForks   bool
-	NoPrivate bool
-	NoPublic  bool
-	NoWikis   bool
-	Token     string
-	User      string
+	NoForks    bool
+	NoIssues   bool
+	NoPrivate  bool
+	NoPublic   bool
+	NoReleases bool
+	NoWikis    bool
+	Token      string
+	User       string
 
 	TestURL string
 }
@@ -55,12 +57,14 @@ type API struct {
 // :param testTokenAnswer: For testing. Don't prompt for token, use this value instead.
 func NewAPI(config config.Config, testTokenAnswer string) (api API, err error) {
 	api = API{
-		NoForks:   config.NoForks,
-		NoPrivate: config.NoPrivate,
-		NoPublic:  config.NoPublic,
-		NoWikis:   config.NoWikis,
-		Token:     config.Token,
-		User:      config.User,
+		NoForks:    config.NoForks,
+		NoIssues:   config.NoIssues,
+		NoPrivate:  config.NoPrivate,
+		NoPublic:   config.NoPublic,
+		NoReleases: config.NoReleases,
+		NoWikis:    config.NoWikis,
+		Token:      config.Token,
+		User:       config.User,
 	}
 	if api.Token != "" {
 		return
