@@ -74,14 +74,13 @@ func (a *API) GetRepos(tasks Tasks) error {
 		}
 
 		// Add releases.
-		//if !a.NoReleases {
-		//	// TODO query API to see if there are releases.
-		//	repository := repository.Copy()
-		//	repository.Name += ".releases"
-		//	repository.CloneURL = ""
-		//	repository.JustReleases = true
-		//	repositories.Add(dir+".releases", repository)
-		//}
+		if !a.NoReleases {
+			// Nothing in API response to indicate if repo has releases. Assuming yes for all repos for now.
+			releasesTask := task.dup()
+			releasesTask.Name += ".releases"
+			releasesTask.JustReleases = true
+			tasks[tasks.validDir(dir+".releases")] = releasesTask
+		}
 	}
 
 	return nil
