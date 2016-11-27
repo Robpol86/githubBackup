@@ -118,6 +118,20 @@ func TestGetRepos(t *testing.T) {
 			assert.NoError(err)
 
 			// Verify repos.
+			var expected []string
+			switch no {
+			case "forks":
+				expected = []string{"appveyor-artifacts", "Documents", "Documents.wiki"}
+			case "public":
+				expected = []string{"Documents", "Documents.wiki"}
+			case "private":
+				expected = []string{"appveyor-artifacts", "click_"}
+			case "wikis":
+				expected = []string{"appveyor-artifacts", "click_", "Documents"}
+			default:
+				expected = []string{"appveyor-artifacts", "click_", "Documents", "Documents.wiki"}
+			}
+			assert.Equal(expected, repos.Keys(true))
 			// TODO
 		})
 	}

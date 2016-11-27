@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -142,4 +143,18 @@ func (r Repositories) Add(dir string, repo *github.Repository) (string, *Reposit
 	}
 	r[dir] = repository
 	return dir, &repository
+}
+
+// Keys returns an optionally sorted list of keys in the map. Used for testing.
+func (r Repositories) Keys(srt bool) []string {
+	keys := make([]string, len(r))
+	i := 0
+	for k := range r {
+		keys[i] = k
+		i++
+	}
+	if srt {
+		sort.Strings(keys)
+	}
+	return keys
 }
