@@ -70,10 +70,9 @@ func (a *API) GetRepos(repositories Repositories) error {
 
 		// Add wiki as a separate repo.
 		if !a.NoWikis && *repo.HasWiki {
-			dir += ".wiki"
 			repository.Name += ".wiki"
 			repository.CloneURL = repository.CloneURL[:len(repository.CloneURL)-4] + ".wiki.git"
-			repositories.Add(dir, repository)
+			repositories.Add(dir+".wiki", repository)
 		}
 	}
 

@@ -28,10 +28,11 @@ Usage:
 
 Options:
     -C --no-colors      Disable colored log levels and field keys.
+    -E --no-private     Skip backing up your private repos and private Gists.
     -F --no-forks       Skip backing up forked repos.
     -G --no-gist        Skip backing up your GitHub Gists.
     -h --help           Show this screen.
-    -I --no-private     Skip backing up your private repos and private Gists.
+    -I --no-issues      Skip backing up your repo issues.
     -l FILE --log=FILE  Log output to file.
     -P --no-public      Skip backing up your public repos and public Gists.
     -q --quiet          Don't print anything to stdout/stderr (implies -T).
@@ -62,9 +63,10 @@ func parseBool(value interface{}) bool {
 // Config holds parsed data from command line arguments.
 type Config struct { // Sorted by docopt short option names above.
 	NoColors  bool
+	NoPrivate bool
 	NoForks   bool
 	NoGist    bool
-	NoPrivate bool
+	NoIssues  bool
 	LogFile   string
 	NoPublic  bool
 	Quiet     bool
@@ -92,9 +94,10 @@ func NewConfig(argv []string) (Config, error) {
 	// Populate struct.
 	config := Config{ // Sorted by Config struct field order above.
 		NoColors:  parseBool(parsed["--no-colors"]),
+		NoPrivate: parseBool(parsed["--no-private"]),
 		NoForks:   parseBool(parsed["--no-forks"]),
 		NoGist:    parseBool(parsed["--no-gist"]),
-		NoPrivate: parseBool(parsed["--no-private"]),
+		NoIssues:  parseBool(parsed["--no-issues"]),
 		LogFile:   parseString(parsed["--log"]),
 		NoPublic:  parseBool(parsed["--no-public"]),
 		Quiet:     parseBool(parsed["--quiet"]),
