@@ -34,6 +34,11 @@ func Main(argv []string) int {
 		log.Errorf("ERROR: Not querying GitHub API: %s", err.Error())
 		return 1
 	}
+	repositories := make(api.Repositories)
+	if err := ghAPI.GetRepos(repositories); err != nil {
+		log.Errorf("ERROR: Querying GitHub API for repositories failed: %s", err.Error())
+		return 1
+	}
 
 	// TODO.
 	log.Infof("%v", ghAPI)
