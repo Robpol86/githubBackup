@@ -22,6 +22,10 @@ type Task struct {
 	JustReleases bool
 }
 
+func (t Task) dup() Task {
+	return Task{Name: t.Name, PushedAt: t.PushedAt, Size: t.Size}
+}
+
 // Tasks is a map with keys being destination directory names and values being Task instances.
 type Tasks map[string]Task
 
