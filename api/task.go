@@ -37,18 +37,20 @@ func (t Tasks) Summary() (public, private, forks, wikis, issues, releases int) {
 		switch {
 		case task.JustIssues:
 			issues++
+			continue
 		case task.JustReleases:
 			releases++
-		case task.Fork:
-			forks++
-			fallthrough
-		case task.IsWiki:
-			wikis++
-			fallthrough
+			continue
 		case task.Private:
 			private++
 		default:
 			public++
+		}
+		if task.Fork {
+			forks++
+		}
+		if task.IsWiki {
+			wikis++
 		}
 	}
 	return
