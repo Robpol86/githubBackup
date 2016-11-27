@@ -13,6 +13,13 @@ import (
 	"github.com/rifflock/lfshook"
 )
 
+const _glide = "%[level]s  %[message]s\n"
+
+func levelHandler(entry *logrus.Entry, formatter *lcf.CustomFormatter) (interface{}, error) {
+	level := "[" + strings.ToUpper(entry.Level.String()[:4]) + "]"
+	return lcf.Color(entry, formatter, level), nil
+}
+
 // GetLogger is a convenience function that returns a logrus logger with the "name" field already filled out.
 func GetLogger() *logrus.Entry {
 	return logrus.WithField("name", lcf.CallerName(2))
@@ -22,7 +29,7 @@ func getFormatter(verbose, disableColors, forceColors bool) (formatter *lcf.Cust
 	if verbose {
 		formatter = lcf.NewFormatter(lcf.Detailed, nil)
 	} else {
-		formatter = lcf.NewFormatter(lcf.Message, nil)
+		formatter = lcf.NewFormatter(_glide, lcf.CustomHandlers{"level": levelHandler})
 	}
 	if disableColors {
 		formatter.DisableColors = true
