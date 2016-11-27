@@ -2,11 +2,15 @@ package api
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"path"
+	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Robpol86/githubBackup/testUtils"
@@ -74,4 +78,46 @@ func TestGetReposBad(t *testing.T) {
 		})
 	}
 
+}
+
+func TestGetRepos(t *testing.T) {
+	assert := require.New(t)
+	_, file, _, _ := runtime.Caller(0)
+	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "repos_test.json"))
+	assert.NoError(err)
+
+	// HTTP response.
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Write(reply)
+	}))
+	defer ts.Close()
+
+	for _, no := range []string{"forks", "issues", "private", "public", "releases", "wikis", ""} {
+		t.Run(no, func(t *testing.T) {
+			assert := require.New(t)
+			tasks := make(Tasks)
+
+			// Run.
+			logs, stdout, stderr, err := testUtils.WithLogging(func() {
+				api := &API{
+					TestURL:    ts.URL,
+					NoForks:    no == "forks",
+					NoIssues:   no == "issues",
+					NoPrivate:  no == "private",
+					NoPublic:   no == "public",
+					NoReleases: no == "releases",
+					NoWikis:    no == "wikis",
+				}
+				err := api.GetRepos(tasks)
+				assert.NoError(err)
+			})
+
+			// Verify log.
+			assert.Len(logs.Entries, 1)
+			assert.Equal(logrus.DebugLevel, logs.Entries[0].Level)
+			assert.Empty(stdout)
+			assert.Empty(stderr)
+			assert.NoError(err)
+		})
+	}
 }
