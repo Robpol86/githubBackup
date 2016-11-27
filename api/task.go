@@ -2,7 +2,6 @@ package api
 
 import (
 	"regexp"
-	"sort"
 	"strconv"
 	"time"
 )
@@ -71,14 +70,4 @@ func (t Tasks) validDir(name string) string {
 	}
 
 	return name
-}
-
-func (t Tasks) keys() []string {
-	out := make([]string, len(t))
-	i := 0
-	for out[i] = range t {
-		i++
-	}
-	sort.Strings(out)
-	return out
 }

@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"path"
 	"runtime"
+	"sort"
 	"strings"
 	"testing"
 
@@ -80,7 +81,17 @@ func TestGetReposBad(t *testing.T) {
 
 }
 
-func TestGetRepos(t *testing.T) {
+func (t Tasks) keys() []string {
+	out := make([]string, len(t))
+	i := 0
+	for out[i] = range t {
+		i++
+	}
+	sort.Strings(out)
+	return out
+}
+
+func TestGetReposFilters(t *testing.T) {
 	assert := require.New(t)
 	_, file, _, _ := runtime.Caller(0)
 	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "repos_test.json"))
@@ -118,6 +129,50 @@ func TestGetRepos(t *testing.T) {
 			assert.Empty(stdout)
 			assert.Empty(stderr)
 			assert.NoError(err)
+
+			// Verify repos.
+			var expected []string
+			switch no {
+			case "forks":
+				expected = []string{
+					"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
+					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
+				}
+			case "issues":
+				expected = []string{
+					"Documents", "Documents.releases", "Documents.wiki",
+					"appveyor-artifacts", "appveyor-artifacts.releases",
+					"click_", "click_.releases",
+				}
+			case "private":
+				expected = []string{
+					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
+					"click_", "click_.releases",
+				}
+			case "public":
+				expected = []string{
+					"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
+				}
+			case "releases":
+				expected = []string{
+					"Documents", "Documents.issues", "Documents.wiki",
+					"appveyor-artifacts", "appveyor-artifacts.issues",
+					"click_",
+				}
+			case "wikis":
+				expected = []string{
+					"Documents", "Documents.issues", "Documents.releases",
+					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
+					"click_", "click_.releases",
+				}
+			default:
+				expected = []string{
+					"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
+					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
+					"click_", "click_.releases",
+				}
+			}
+			assert.Equal(expected, tasks.keys())
 		})
 	}
 }
