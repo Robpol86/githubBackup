@@ -3,10 +3,14 @@ package api
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
 	"strings"
 	"syscall"
 
+	"github.com/google/go-github/github"
 	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/oauth2"
 
 	"github.com/Robpol86/githubBackup/config"
 )
@@ -46,6 +50,19 @@ type API struct {
 	User       string
 
 	TestURL string
+}
+
+func (a *API) getClient() *github.Client {
+	var httpClient *http.Client
+	if a.Token != "" {
+		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: a.Token})
+		httpClient = oauth2.NewClient(oauth2.NoContext, tokenSource)
+	}
+	client := github.NewClient(httpClient)
+	if a.TestURL != "" {
+		client.BaseURL, _ = url.Parse(a.TestURL)
+	}
+	return client
 }
 
 // NewAPI reads config data and conditionally prompts for the API token (as a password prompt).
