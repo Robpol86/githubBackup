@@ -72,7 +72,7 @@ func (a *API) GetRepos(repositories Repositories) error {
 		if !a.NoWikis && *repo.HasWiki {
 			dir += ".wiki"
 			repository.Name += ".wiki"
-			repository.CloneURL = (repository.CloneURL)[:len(repository.CloneURL)-4] + ".wiki.git"
+			repository.CloneURL = repository.CloneURL[:len(repository.CloneURL)-4] + ".wiki.git"
 			repositories.Add(dir, repository)
 		}
 	}
