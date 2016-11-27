@@ -120,16 +120,16 @@ func testSetupLogging(t *testing.T, verbose, quiet, hasLogFile bool) {
 		}
 	} else {
 		expectedOut = []string{
-			"githubBackup " + Version,
-			"Sample info 1.",
-			"Sample info 2.",
+			"\x1b[32m[INFO]\x1b[0m  githubBackup " + Version,
+			"\x1b[32m[INFO]\x1b[0m  Sample info 1.",
+			"\x1b[32m[INFO]\x1b[0m  Sample info 2.",
 			"",
 		}
 		expectedErr = []string{
-			"Sample warn 1.",
-			"Sample warn 2.",
-			"Sample error 1.",
-			"Sample error 2.",
+			"\x1b[33m[WARN]\x1b[0m  Sample warn 1.",
+			"\x1b[33m[WARN]\x1b[0m  Sample warn 2.",
+			"\x1b[31m[ERRO]\x1b[0m  Sample error 1.",
+			"\x1b[31m[ERRO]\x1b[0m  Sample error 2.",
 			"",
 		}
 	}
@@ -153,13 +153,13 @@ func testSetupLogging(t *testing.T, verbose, quiet, hasLogFile bool) {
 		}
 	} else {
 		expectedFile = []string{
-			"githubBackup " + Version,
-			"Sample info 1.",
-			"Sample info 2.",
-			"Sample warn 1.",
-			"Sample warn 2.",
-			"Sample error 1.",
-			"Sample error 2.",
+			"[INFO]  githubBackup " + Version,
+			"[INFO]  Sample info 1.",
+			"[INFO]  Sample info 2.",
+			"[WARN]  Sample warn 1.",
+			"[WARN]  Sample warn 2.",
+			"[ERRO]  Sample error 1.",
+			"[ERRO]  Sample error 2.",
 			"",
 		}
 	}
