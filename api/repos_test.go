@@ -103,7 +103,7 @@ func TestGetReposFilters(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	for _, no := range []string{"forks", "issues", "private", "public", "releases", "wikis", ""} {
+	for _, no := range []string{"forks", "issues", "private", "public", "releases", "wikis", "NEITHER"} {
 		t.Run(no, func(t *testing.T) {
 			assert := require.New(t)
 			tasks := make(Tasks)
@@ -132,47 +132,62 @@ func TestGetReposFilters(t *testing.T) {
 
 			// Verify repos.
 			var expected []string
+			var ePublic, ePrivate, eForks, eWikis, eIssues, eReleases int
 			switch no {
 			case "forks":
 				expected = []string{
 					"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
 					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
 				}
+				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 1, 2, 0, 1, 2, 2
 			case "issues":
 				expected = []string{
 					"Documents", "Documents.releases", "Documents.wiki",
 					"appveyor-artifacts", "appveyor-artifacts.releases",
 					"click_", "click_.releases",
 				}
+				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 2, 2, 1, 1, 0, 3
 			case "private":
 				expected = []string{
 					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
 					"click_", "click_.releases",
 				}
+				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 2, 0, 1, 0, 1, 2
 			case "public":
 				expected = []string{
 					"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
 				}
+				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 0, 2, 0, 1, 1, 1
 			case "releases":
 				expected = []string{
 					"Documents", "Documents.issues", "Documents.wiki",
 					"appveyor-artifacts", "appveyor-artifacts.issues",
 					"click_",
 				}
+				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 2, 2, 1, 1, 2, 0
 			case "wikis":
 				expected = []string{
 					"Documents", "Documents.issues", "Documents.releases",
 					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
 					"click_", "click_.releases",
 				}
+				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 2, 1, 1, 0, 2, 3
 			default:
 				expected = []string{
 					"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
 					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
 					"click_", "click_.releases",
 				}
+				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 2, 2, 1, 1, 2, 3
 			}
 			assert.Equal(expected, tasks.keys())
+			aPublic, aPrivate, aForks, aWikis, aIssues, aReleases := tasks.Summary()
+			assert.Equal(ePublic, aPublic)
+			assert.Equal(ePrivate, aPrivate)
+			assert.Equal(eForks, aForks)
+			assert.Equal(eWikis, aWikis)
+			assert.Equal(eIssues, aIssues)
+			assert.Equal(eReleases, aReleases)
 		})
 	}
 }

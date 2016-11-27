@@ -18,6 +18,7 @@ func (a *API) parseRepo(repo *github.Repository, tasks Tasks) {
 		Size:     *repo.Size,
 
 		CloneURL: *repo.CloneURL,
+		Fork:     *repo.Fork,
 	}
 	if *repo.Private {
 		task.CloneURL = *repo.SSHURL
