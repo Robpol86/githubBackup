@@ -28,20 +28,24 @@ func Main(argv []string) int {
 		return 2
 	}
 
-	// Query API.
+	// Getting token from user.
 	ghAPI, err := api.NewAPI(cfg, "")
 	if err != nil {
 		log.Errorf("ERROR: Not querying GitHub API: %s", err.Error())
 		return 1
 	}
+
+	// Query APIs.
 	repositories := make(api.Repositories)
-	if err := ghAPI.GetRepos(repositories); err != nil {
-		log.Errorf("ERROR: Querying GitHub API for repositories failed: %s", err.Error())
-		return 1
+	if !cfg.NoRepos {
+		if err = ghAPI.GetRepos(repositories); err != nil {
+			log.Errorf("ERROR: Querying GitHub API for repositories failed: %s", err.Error())
+			return 1
+		}
 	}
 
 	// TODO.
-	log.Infof("%v", ghAPI)
+	log.Infof("%v", repositories)
 	return 0
 }
 
