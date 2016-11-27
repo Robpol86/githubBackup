@@ -53,14 +53,27 @@ func (a *API) GetRepos(repositories Repositories) error {
 		if (a.NoForks && *repo.Fork) || (a.NoPublic && !*repo.Private) || (a.NoPrivate && *repo.Private) {
 			continue
 		}
-		dir, _ := repositories.Add("", repo)
+
+		// Translate.
+		repository := Repository{
+			Name:     *repo.Name,
+			CloneURL: *repo.CloneURL,
+			PushedAt: repo.PushedAt.Time,
+			Size:     *repo.Size,
+		}
+		if *repo.Private {
+			repository.CloneURL = *repo.SSHURL
+		}
+
+		// Add.
+		dir := repositories.Add("", repository)
 
 		// Add wiki as a separate repo.
 		if !a.NoWikis && *repo.HasWiki {
 			dir += ".wiki"
-			*repo.Name += ".wiki"
-			*repo.GitURL = (*repo.GitURL)[:len(*repo.GitURL)-4] + ".wiki.git"
-			repositories.Add(dir, repo)
+			repository.Name += ".wiki"
+			repository.CloneURL = (repository.CloneURL)[:len(repository.CloneURL)-4] + ".wiki.git"
+			repositories.Add(dir, repository)
 		}
 	}
 

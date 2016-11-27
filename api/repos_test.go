@@ -132,7 +132,33 @@ func TestGetRepos(t *testing.T) {
 				expected = []string{"Documents", "Documents.wiki", "appveyor-artifacts", "click_"}
 			}
 			assert.Equal(expected, repos.Keys(true))
-			// TODO
+
+			// Verify public.
+			if no != "public" {
+				repo := repos["appveyor-artifacts"]
+				assert.Equal("appveyor-artifacts", repo.Name)
+				assert.Equal("https://github.com/Robpol86/appveyor-artifacts.git", repo.CloneURL)
+				// assert.Equal("2016-05-08T17:56:35Z", repo.PushedAt)
+				assert.Equal(82, repo.Size)
+			}
+
+			// Verify private.
+			if no != "private" {
+				repo := repos["Documents"]
+				assert.Equal("Documents", repo.Name)
+				assert.Equal("git@github.com:Robpol86/Documents.git", repo.CloneURL)
+				// assert.Equal("2014-01-04T21:41:35Z", repo.PushedAt)
+				assert.Equal(148, repo.Size)
+			}
+
+			// Verify wiki.
+			if no != "wikis" {
+				//repo := repos["Documents.wiki"]
+				//assert.Equal("Documents.wiki", repo.Name)
+				//assert.Equal("git@github.com:Robpol86/Documents.wiki.git", repo.CloneURL)
+				//// assert.Equal("2014-01-04T21:41:35Z", repo.PushedAt)
+				//assert.Equal(148, repo.Size)
+			}
 		})
 	}
 }

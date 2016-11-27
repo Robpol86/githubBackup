@@ -10,7 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/google/go-github/github"
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/Robpol86/githubBackup/config"
@@ -103,7 +102,7 @@ func NewAPI(config config.Config, testTokenAnswer string) (api API, err error) {
 // Repository represents one git repository to clone.
 type Repository struct {
 	Name     string
-	GitURL   string
+	CloneURL string
 	PushedAt time.Time
 	Size     int
 }
@@ -113,11 +112,11 @@ type Repositories map[string]Repository
 
 // Add a GitHub repository to the map and handle valid directory names and collisions.
 //
-// :param repo: github.Repository struct to read.
-func (r Repositories) Add(dir string, repo *github.Repository) (string, *Repository) {
+// :param repo: Repository to add.
+func (r Repositories) Add(dir string, repo Repository) string {
 	// Derive multi-platform-safe file name from repo name.
 	if dir == "" {
-		dir = _reValidFilename.ReplaceAllLiteralString(*repo.Name, "_")
+		dir = _reValidFilename.ReplaceAllLiteralString(repo.Name, "_")
 		if len(dir) > _maxName {
 			dir = dir[:_maxName]
 		}
@@ -135,14 +134,8 @@ func (r Repositories) Add(dir string, repo *github.Repository) (string, *Reposit
 	}
 
 	// Add to map.
-	repository := Repository{
-		Name:     *repo.Name,
-		GitURL:   *repo.GitURL,
-		PushedAt: repo.PushedAt.Time,
-		Size:     *repo.Size,
-	}
-	r[dir] = repository
-	return dir, &repository
+	r[dir] = repo
+	return dir
 }
 
 // Keys returns an optionally sorted list of keys in the map. Used for testing.
