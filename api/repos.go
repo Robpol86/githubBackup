@@ -44,7 +44,7 @@ func (a *API) GetRepos(repositories Repositories) error {
 		if strings.HasPrefix(err.Error(), "invalid character ") {
 			err = errors.New("invalid JSON response from server")
 		}
-		log.Errorf("Failed to query for repos: %s", err.Error())
+		log.Debugf("Failed to query for repos: %s", err.Error())
 		return err
 	}
 

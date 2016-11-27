@@ -69,7 +69,7 @@ func TestMainLogError(t *testing.T) {
 
 	assert.NoError(err)
 	assert.Contains(stdout, "githubBackup "+config.Version)
-	assert.Contains(stderr, "ERROR: Failed to setup logging: ")
+	assert.Contains(stderr, "Failed to setup logging: ")
 }
 
 func TestMainTokenError(t *testing.T) {
@@ -88,5 +88,5 @@ func TestMainTokenError(t *testing.T) {
 
 	assert.NoError(err)
 	assert.Contains(stdout, "githubBackup "+config.Version)
-	assert.Contains(stderr, "ERROR: Not querying GitHub API: ")
+	assert.Contains(stderr, "Not querying GitHub API: ")
 }

@@ -24,14 +24,14 @@ func Main(argv []string) int {
 	err = config.SetupLogging(cfg.Verbose, cfg.Quiet, cfg.NoColors, false, cfg.LogFile)
 	log := config.GetLogger() // SetupLogging only errors on log file setup and removes log hook. Logging is safe.
 	if err != nil {
-		log.Errorf("ERROR: Failed to setup logging: %s", err.Error())
+		log.Errorf("Failed to setup logging: %s", err.Error())
 		return 2
 	}
 
 	// Getting token from user.
 	ghAPI, err := api.NewAPI(cfg, "")
 	if err != nil {
-		log.Errorf("ERROR: Not querying GitHub API: %s", err.Error())
+		log.Errorf("Not querying GitHub API: %s", err.Error())
 		return 1
 	}
 
@@ -39,7 +39,7 @@ func Main(argv []string) int {
 	repositories := make(api.Repositories)
 	if !cfg.NoRepos {
 		if err = ghAPI.GetRepos(repositories); err != nil {
-			log.Errorf("ERROR: Querying GitHub API for repositories failed: %s", err.Error())
+			log.Errorf("Querying GitHub API for repositories failed: %s", err.Error())
 			return 1
 		}
 	}
