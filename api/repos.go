@@ -65,15 +65,35 @@ func (a *API) GetRepos(repositories Repositories) error {
 			repository.CloneURL = *repo.SSHURL
 		}
 
-		// Add.
+		// Add repo.
 		dir := repositories.Add("", repository)
 
 		// Add wiki as a separate repo.
 		if !a.NoWikis && *repo.HasWiki {
+			repository := repository.Copy() // Scoped in if statement.
 			repository.Name += ".wiki"
 			repository.CloneURL = repository.CloneURL[:len(repository.CloneURL)-4] + ".wiki.git"
 			repositories.Add(dir+".wiki", repository)
 		}
+
+		// Add issues.
+		//if !a.NoIssues && *repo.HasIssues {
+		//	repository := repository.Copy()
+		//	repository.Name += ".issues"
+		//	repository.CloneURL = ""
+		//	repository.JustIssues = true
+		//	repositories.Add(dir+".issues", repository)
+		//}
+
+		// Add releases.
+		//if !a.NoReleases {
+		//	// TODO query API to see if there are releases.
+		//	repository := repository.Copy()
+		//	repository.Name += ".releases"
+		//	repository.CloneURL = ""
+		//	repository.JustReleases = true
+		//	repositories.Add(dir+".releases", repository)
+		//}
 	}
 
 	return nil
