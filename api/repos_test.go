@@ -138,7 +138,6 @@ func TestGetRepos(t *testing.T) {
 				repo := repos["appveyor-artifacts"]
 				assert.Equal("appveyor-artifacts", repo.Name)
 				assert.Equal("https://github.com/Robpol86/appveyor-artifacts.git", repo.CloneURL)
-				// assert.Equal("2016-05-08T17:56:35Z", repo.PushedAt)
 				assert.Equal(82, repo.Size)
 			}
 
@@ -147,7 +146,6 @@ func TestGetRepos(t *testing.T) {
 				repo := repos["Documents"]
 				assert.Equal("Documents", repo.Name)
 				assert.Equal("git@github.com:Robpol86/Documents.git", repo.CloneURL)
-				// assert.Equal("2014-01-04T21:41:35Z", repo.PushedAt)
 				assert.Equal(148, repo.Size)
 			}
 
@@ -156,7 +154,6 @@ func TestGetRepos(t *testing.T) {
 				repo := repos["Documents.wiki"]
 				assert.Equal("Documents.wiki", repo.Name)
 				assert.Equal("git@github.com:Robpol86/Documents.wiki.git", repo.CloneURL)
-				// assert.Equal("2014-01-04T21:41:35Z", repo.PushedAt)
 				assert.Equal(148, repo.Size)
 			}
 		})
