@@ -35,3 +35,6 @@ func (a *API) GetGists(tasks Tasks) error {
 
 	return nil
 }
+
+// TODO support forked gists, private gists with multiple files.
+// TODO pagination for gists and repos.
