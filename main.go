@@ -79,7 +79,10 @@ func Main(argv []string) int {
 	// Query APIs.
 	tasks := make(api.Tasks)
 	if !cfg.NoRepos {
-		// TODO
+		if err = ghAPI.GetRepos(tasks); err != nil {
+			log.Errorf("Querying GitHub API for repositories failed: %s", err.Error())
+			return 1
+		}
 	}
 	if !cfg.NoGist {
 		// TODO
@@ -93,7 +96,6 @@ func Main(argv []string) int {
 	logSummary(tasks)
 
 	// TODO.
-	log.Infof("%v", ghAPI)
 	return 0
 }
 
