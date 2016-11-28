@@ -17,11 +17,12 @@ type Task struct {
 	PushedAt time.Time
 	Size     int
 
-	CloneURL     string
-	Fork         bool
-	IsWiki       bool
-	JustIssues   bool
-	JustReleases bool
+	CloneURL         string
+	Fork             bool
+	IsWiki           bool
+	JustGistComments bool
+	JustIssues       bool
+	JustReleases     bool
 }
 
 func (t Task) dup() Task {
