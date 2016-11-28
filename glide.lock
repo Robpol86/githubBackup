@@ -1,22 +1,54 @@
-hash: 78d8ceffbbf52364f5e857ba8bb360f12ccceaaadbd7b048c3cfbb5881ceaf17
-updated: 2016-11-24T14:07:37.545908823-08:00
+hash: c9b4f9b5d8efcf32d04c00b057415158c78a2cab438cbd6048560d00fca892ee
+updated: 2016-11-25T20:45:01.221192272-08:00
 imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
+- name: github.com/golang/protobuf
+  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  subpackages:
+  - proto
+- name: github.com/google/go-github
+  version: d4f1b2d029be1730fd349ca929cc9c0da4a27007
+  subpackages:
+  - github
+- name: github.com/google/go-querystring
+  version: 9235644dd9e52eeae6fa48efd539fdc351a0af53
+  subpackages:
+  - query
 - name: github.com/rifflock/lfshook
   version: 3f9d976bd7402de39b46357069fb6325a974572e
 - name: github.com/Robpol86/logrus-custom-formatter
   version: e8bd909fb9f7fa8714d4a075b23eac863615103c
 - name: github.com/Sirupsen/logrus
   version: d26492970760ca5d33129d2d799e34be5c4782eb
+  subpackages:
+  - hooks/test
 - name: golang.org/x/crypto
   version: ede567c8e044a5913dad1d1af3696d9da953104c
   subpackages:
   - ssh/terminal
+- name: golang.org/x/net
+  version: 4971afdc2f162e82d185353533d3cf16188a9f4e
+  subpackages:
+  - context
+- name: golang.org/x/oauth2
+  version: d5040cddfc0da40b408c9a1da4728662435176a9
+  subpackages:
+  - internal
 - name: golang.org/x/sys
   version: b699b7032584f0953262cb2788a0ca19bb494703
   subpackages:
   - unix
+- name: google.golang.org/appengine
+  version: ca59ef35f409df61fa4a5f8290ff289b37eccfb8
+  subpackages:
+  - internal
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/remote_api
+  - internal/urlfetch
+  - urlfetch
 testImports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
