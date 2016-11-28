@@ -191,3 +191,41 @@ func TestGetReposFilters(t *testing.T) {
 		})
 	}
 }
+
+func TestAPI_GetRepos_parseRepo(t *testing.T) {
+	assert := require.New(t)
+	_, file, _, _ := runtime.Caller(0)
+	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "repos_test.json"))
+	assert.NoError(err)
+
+	// HTTP response.
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Write(reply)
+	}))
+	defer ts.Close()
+
+	// Run.
+	tasks := make(Tasks)
+	_, stdout, stderr, err := testUtils.WithLogging(func() {
+		api := &API{TestURL: ts.URL}
+		err := api.GetRepos(tasks)
+		assert.NoError(err)
+	})
+
+	// Verify log.
+	assert.Empty(stdout)
+	assert.Empty(stderr)
+	assert.NoError(err)
+
+	// Verify private repo.
+	assert.Equal("Documents", tasks["Documents"].Name)
+	assert.Equal(true, tasks["Documents"].Private)
+	assert.Equal(148, tasks["Documents"].Size)
+	assert.Equal("git@github.com:Robpol86/Documents.git", tasks["Documents"].CloneURL)
+	assert.Equal(false, tasks["Documents"].Fork)
+	assert.Equal(false, tasks["Documents"].IsWiki)
+	assert.Equal(false, tasks["Documents"].JustIssues)
+	assert.Equal(false, tasks["Documents"].JustReleases)
+
+	// TODO
+}
