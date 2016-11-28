@@ -13,7 +13,7 @@ import (
 	"github.com/rifflock/lfshook"
 )
 
-const _glide = "%[level]s  %[message]s\n"
+const glide = "%[level]s  %[message]s\n"
 
 func levelHandler(entry *logrus.Entry, formatter *lcf.CustomFormatter) (interface{}, error) {
 	level := "[" + strings.ToUpper(entry.Level.String()[:4]) + "]"
@@ -29,7 +29,7 @@ func getFormatter(verbose, disableColors, forceColors bool) (formatter *lcf.Cust
 	if verbose {
 		formatter = lcf.NewFormatter(lcf.Detailed, nil)
 	} else {
-		formatter = lcf.NewFormatter(_glide, lcf.CustomHandlers{"level": levelHandler})
+		formatter = lcf.NewFormatter(glide, lcf.CustomHandlers{"level": levelHandler})
 	}
 	if disableColors {
 		formatter.DisableColors = true
