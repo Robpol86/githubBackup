@@ -277,3 +277,8 @@ func TestAPI_GetRepos_parseRepo(t *testing.T) {
 	assert.Equal(false, tasks["click_"].JustIssues)
 	assert.Equal(false, tasks["click_"].JustReleases)
 }
+
+func TestAPI_GetRepos_Pagination(t *testing.T) {
+	// Link: <https://api.github.com/organizations/12824109/repos?per_page=2&page=2>; rel="next", <https://api.github.com/organizations/12824109/repos?per_page=2&page=4>; rel="last"
+	// TODO
+}
