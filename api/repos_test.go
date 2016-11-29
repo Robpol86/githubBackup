@@ -278,7 +278,55 @@ func TestAPI_GetRepos_parseRepo(t *testing.T) {
 	assert.Equal(false, tasks["click_"].JustReleases)
 }
 
+// From https://github.com/evermax/stargraph/blob/3491c0/github/repoinfo.go#L109
+func linksFormat(url string) string {
+	if strings.Contains(url, "?") {
+		return "<" + url + "&page=%d>; rel=\"next\", <" + url + "&page=%d>; rel=\"last\""
+	}
+	return "<" + url + "?page=%d>; rel=\"next\", <" + url + "?page=%d>; rel=\"last\""
+}
+
 func TestAPI_GetRepos_Pagination(t *testing.T) {
 	// Link: <https://api.github.com/organizations/12824109/repos?per_page=2&page=2>; rel="next", <https://api.github.com/organizations/12824109/repos?per_page=2&page=4>; rel="last"
-	// TODO
+	assert := require.New(t)
+	_, file, _, _ := runtime.Caller(0)
+	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "repos_test.json"))
+	assert.NoError(err)
+
+	// HTTP response.
+	var ts *httptest.Server
+	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		values := r.URL.Query()
+		if p, ok := values["page"]; !ok || len(p) < 1 || p[0] == "0" {
+			w.Header().Add("Link", fmt.Sprintf(linksFormat(ts.URL), 1, 1))
+			w.Write(reply)
+			return
+		}
+
+		// Page2.
+		w.WriteHeader(500) // TODO
+	}))
+	defer ts.Close()
+
+	// Run.
+	tasks := make(Tasks)
+	_, stdout, stderr, err := testUtils.WithLogging(func() {
+		api := &API{TestURL: ts.URL}
+		err := api.GetRepos(tasks)
+		assert.NoError(err)
+	})
+
+	// Verify log.
+	assert.Empty(stdout)
+	assert.Empty(stderr)
+	assert.NoError(err)
+
+	// Verify repos.
+	expected := []string{
+		"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
+		"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
+		"click_", "click_.releases",
+		// TODO add more.
+	}
+	assert.Equal(expected, tasks.keys())
 }
