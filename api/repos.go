@@ -63,30 +63,38 @@ func (a *API) GetRepos(tasks Tasks) error {
 	client := a.getClient()
 
 	// Configure request options.
-	var options *github.RepositoryListOptions
+	var options github.RepositoryListOptions
 	if a.NoPrivate {
-		options = &github.RepositoryListOptions{Visibility: "public"}
+		options = github.RepositoryListOptions{Visibility: "public"}
 	} else if a.NoPublic {
-		options = &github.RepositoryListOptions{Visibility: "private"}
+		options = github.RepositoryListOptions{Visibility: "private"}
 	}
 
-	// Query API.
-	repos, response, err := client.Repositories.List(a.User, options)
-	log.Debugf("GitHub API response: %v", response)
-	if err != nil {
-		if strings.HasPrefix(err.Error(), "invalid character ") {
-			err = errors.New("invalid JSON response from server")
+	for {
+		// Query API.
+		repos, response, err := client.Repositories.List(a.User, &options)
+		log.Debugf("GitHub repos API page %d response: %v", options.ListOptions.Page, response)
+		if err != nil {
+			if strings.HasPrefix(err.Error(), "invalid character ") {
+				err = errors.New("invalid JSON response from server")
+			}
+			log.Debugf("Failed to query for repos: %s", err.Error())
+			return err
 		}
-		log.Debugf("Failed to query for repos: %s", err.Error())
-		return err
-	}
 
-	// Parse.
-	for _, repo := range repos {
-		if (a.NoForks && *repo.Fork) || (a.NoPublic && !*repo.Private) || (a.NoPrivate && *repo.Private) {
-			continue
+		// Parse.
+		for _, repo := range repos {
+			if (a.NoForks && *repo.Fork) || (a.NoPublic && !*repo.Private) || (a.NoPrivate && *repo.Private) {
+				continue
+			}
+			a.parseRepo(repo, tasks)
 		}
-		a.parseRepo(repo, tasks)
+
+		// Next page or exit.
+		if response.NextPage == 0 {
+			break
+		}
+		options.ListOptions.Page = response.NextPage
 	}
 
 	return nil
