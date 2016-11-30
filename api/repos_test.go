@@ -299,12 +299,8 @@ func TestAPI_GetRepos_Pagination(t *testing.T) {
 		values := r.URL.Query()
 		if p, ok := values["page"]; !ok || len(p) < 1 || p[0] == "0" {
 			w.Header().Add("Link", fmt.Sprintf(linksFormat(ts.URL), 1, 1))
-			w.Write(reply)
-			return
 		}
-
-		// Page2.
-		w.WriteHeader(500) // TODO
+		w.Write(reply)
 	}))
 	defer ts.Close()
 
@@ -324,9 +320,11 @@ func TestAPI_GetRepos_Pagination(t *testing.T) {
 	// Verify repos.
 	expected := []string{
 		"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
+		"Documents0", "Documents0.issues", "Documents0.releases", "Documents0.wiki",
 		"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
+		"appveyor-artifacts0", "appveyor-artifacts0.issues", "appveyor-artifacts0.releases",
 		"click_", "click_.releases",
-		// TODO add more.
+		"click_0", "click_0.releases",
 	}
 	assert.Equal(expected, tasks.keys())
 }
