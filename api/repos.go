@@ -84,6 +84,9 @@ func (a *API) GetRepos(tasks Tasks) error {
 
 		// Parse.
 		for _, repo := range repos {
+			if repo.MirrorURL != nil {
+				continue
+			}
 			if (a.NoForks && *repo.Fork) || (a.NoPublic && !*repo.Private) || (a.NoPrivate && *repo.Private) {
 				continue
 			}
