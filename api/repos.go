@@ -20,6 +20,7 @@ type GitHubRepo struct {
 	CloneURL  string
 	WikiURL   string
 	HasIssues bool
+	Releases  []*github.RepositoryRelease
 }
 
 // GitHubRepos is a slice of GitHubRepo with attached convenience function receivers.
@@ -28,13 +29,15 @@ type GitHubRepos []GitHubRepo
 // Counts returns the number of repos (values) for specific types/categories (keys).
 func (g *GitHubRepos) Counts() map[string]int {
 	counts := map[string]int{
-		"all":     0,
-		"public":  0,
-		"private": 0,
-		"sources": 0,
-		"forks":   0,
-		"wikis":   0,
-		"issues":  0,
+		"all":            0,
+		"public":         0,
+		"private":        0,
+		"sources":        0,
+		"forks":          0,
+		"wikis":          0,
+		"issues":         0,
+		"releases":       0,
+		"release_assets": 0,
 	}
 	for _, repo := range *g {
 		counts["all"]++
@@ -53,6 +56,10 @@ func (g *GitHubRepos) Counts() map[string]int {
 		}
 		if repo.HasIssues {
 			counts["issues"]++
+		}
+		for _, release := range repo.Releases {
+			counts["releases"]++
+			counts["release_assets"] += len(release.Assets)
 		}
 	}
 	return counts
