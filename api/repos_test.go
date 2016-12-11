@@ -173,7 +173,7 @@ func TestAPI_GetRepos_Pagination(t *testing.T) {
 	// Run.
 	ghRepos := GitHubRepos{}
 	stdout, stderr, err := testUtils.WithCapSys(func() {
-		api := &API{TestURL: ts.URL}
+		api := &API{TestURL: ts.URL, NoReleases: true} // TODO releases pagination.
 		err := api.GetRepos(&ghRepos)
 		assert.NoError(err)
 	})

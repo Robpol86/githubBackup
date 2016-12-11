@@ -166,7 +166,7 @@ func (a *API) GetRepos(ghRepos *GitHubRepos) error {
 			} else {
 				var ghReleases [][]*github.RepositoryRelease
 				if !a.NoReleases {
-					// TODO: ghReleases, err = a.getReleases(*repo.Name)
+					ghReleases, err = a.getReleases(*repo.Name)
 					if err != nil {
 						return err
 					}
