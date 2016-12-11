@@ -3,11 +3,60 @@ package api
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/google/go-github/github"
 
 	"github.com/Robpol86/githubBackup/config"
 )
+
+// GitHubRepo holds data for one GitHub repository.
+type GitHubRepo struct {
+	Name      string
+	Size      int
+	Fork      bool
+	Private   bool
+	PushedAt  time.Time
+	CloneURL  string
+	WikiURL   string
+	HasIssues bool
+}
+
+// GitHubRepos is a slice of GitHubRepo with attached convenience function receivers.
+type GitHubRepos []GitHubRepo
+
+// Counts returns the number of repos (values) for specific types/categories (keys).
+func (g *GitHubRepos) Counts() map[string]int {
+	counts := map[string]int{
+		"all":     0,
+		"public":  0,
+		"private": 0,
+		"sources": 0,
+		"forks":   0,
+		"wikis":   0,
+		"issues":  0,
+	}
+	for _, repo := range *g {
+		counts["all"]++
+		if repo.Private {
+			counts["private"]++
+		} else {
+			counts["public"]++
+		}
+		if repo.Fork {
+			counts["forks"]++
+		} else {
+			counts["sources"]++
+		}
+		if repo.WikiURL != "" {
+			counts["wikis"]++
+		}
+		if repo.HasIssues {
+			counts["issues"]++
+		}
+	}
+	return counts
+}
 
 func (a *API) parseRepo(repo *github.Repository, tasks Tasks) {
 	// Create task.
@@ -85,6 +134,17 @@ func (a *API) GetRepos(tasks Tasks) error {
 
 		// Parse.
 		for _, repo := range repos {
+			//if repo.MirrorURL != nil {
+			//	logWithFields.Debugf("Skipping mirrored repo: %s", *repo.Name)
+			//} else if a.NoForks && *repo.Fork {
+			//	logWithFields.Debugf("Skipping forked repo: %s", *repo.Name)
+			//} else if a.NoPublic && !*repo.Private {
+			//	logWithFields.Debugf("Skipping public repo: %s", *repo.Name)
+			//} else if a.NoPrivate && *repo.Private {
+			//	logWithFields.Debugf("Skipping private repo: %s", *repo.Name)
+			//} else {
+			//	a.parseRepo(repo, tasks)
+			//}
 			if repo.MirrorURL != nil {
 				continue
 			}
