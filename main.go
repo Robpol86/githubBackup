@@ -27,12 +27,9 @@ func toFields(counts map[string]int) logrus.Fields {
 
 func logSummary(ghRepos *api.GitHubRepos) {
 	log := config.GetLogger()
-	// Repos.
 
 	// Repos.
-	if counts := ghRepos.Counts(); counts["all"] == 0 {
-		log.WithFields(toFields(counts)).Warn("Didn't find any GitHub repositories to backup.")
-	} else {
+	if counts := ghRepos.Counts(); counts["all"] > 0 {
 		r := counts["all"]
 		p := counts["private"]
 		f := counts["forks"]
@@ -49,6 +46,8 @@ func logSummary(ghRepos *api.GitHubRepos) {
 		} else {
 			log.Infof("--> %d of them have GitHub Issies.", counts["issues"])
 		}
+	} else {
+		log.WithFields(toFields(counts)).Warn("Didn't find any GitHub repositories to backup.")
 	}
 }
 
