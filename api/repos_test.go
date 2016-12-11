@@ -7,11 +7,9 @@ import (
 	"net/http/httptest"
 	"path"
 	"runtime"
-	"sort"
 	"strings"
 	"testing"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Robpol86/githubBackup/testUtils"
@@ -82,16 +80,6 @@ func TestGetReposBad(t *testing.T) {
 
 }
 
-func (t Tasks) keys() []string {
-	out := make([]string, len(t))
-	i := 0
-	for out[i] = range t {
-		i++
-	}
-	sort.Strings(out)
-	return out
-}
-
 func TestGetReposFilters(t *testing.T) {
 	assert := require.New(t)
 	_, file, _, _ := runtime.Caller(0)
@@ -104,91 +92,53 @@ func TestGetReposFilters(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	for _, no := range []string{"forks", "issues", "private", "public", "releases", "wikis", "NEITHER"} {
+	for _, no := range []string{"forks", "issues", "private", "public", "wikis", "NEITHER"} {
 		t.Run(no, func(t *testing.T) {
 			assert := require.New(t)
-			tasks := make(Tasks)
+			ghRepos := GitHubRepos{}
 
 			// Run.
-			logs, stdout, stderr, err := testUtils.WithLogging(func() {
+			stdout, stderr, err := testUtils.WithCapSys(func() {
 				api := &API{
-					TestURL:    ts.URL,
-					NoForks:    no == "forks",
-					NoIssues:   no == "issues",
-					NoPrivate:  no == "private",
-					NoPublic:   no == "public",
-					NoReleases: no == "releases",
-					NoWikis:    no == "wikis",
+					TestURL:   ts.URL,
+					NoForks:   no == "forks",
+					NoIssues:  no == "issues",
+					NoPrivate: no == "private",
+					NoPublic:  no == "public",
+					NoWikis:   no == "wikis",
 				}
-				err := api.GetRepos(tasks)
+				err := api.GetRepos(&ghRepos)
 				assert.NoError(err)
 			})
 
-			// Verify log.
-			assert.Len(logs.Entries, 1)
-			assert.Equal(logrus.DebugLevel, logs.Entries[0].Level)
+			// Verify streams.
 			assert.Empty(stdout)
 			assert.Empty(stderr)
 			assert.NoError(err)
 
 			// Verify repos.
-			var expected []string
-			var ePublic, ePrivate, eForks, eWikis, eIssues, eReleases int
+			var expected map[string]int
 			switch no {
 			case "forks":
-				expected = []string{
-					"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
-					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
-				}
-				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 1, 2, 0, 1, 2, 2
+				expected = map[string]int{"all": 2, "public": 1, "private": 1, "sources": 2,
+					"forks": 0, "wikis": 1, "issues": 2}
 			case "issues":
-				expected = []string{
-					"Documents", "Documents.releases", "Documents.wiki",
-					"appveyor-artifacts", "appveyor-artifacts.releases",
-					"click_", "click_.releases",
-				}
-				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 2, 2, 1, 1, 0, 3
+				expected = map[string]int{"all": 3, "public": 2, "private": 1, "sources": 2,
+					"forks": 1, "wikis": 1, "issues": 0}
 			case "private":
-				expected = []string{
-					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
-					"click_", "click_.releases",
-				}
-				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 2, 0, 1, 0, 1, 2
+				expected = map[string]int{"all": 2, "public": 2, "private": 0, "sources": 1,
+					"forks": 1, "wikis": 0, "issues": 1}
 			case "public":
-				expected = []string{
-					"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
-				}
-				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 0, 2, 0, 1, 1, 1
-			case "releases":
-				expected = []string{
-					"Documents", "Documents.issues", "Documents.wiki",
-					"appveyor-artifacts", "appveyor-artifacts.issues",
-					"click_",
-				}
-				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 2, 2, 1, 1, 2, 0
+				expected = map[string]int{"all": 1, "public": 0, "private": 1, "sources": 1,
+					"forks": 0, "wikis": 1, "issues": 1}
 			case "wikis":
-				expected = []string{
-					"Documents", "Documents.issues", "Documents.releases",
-					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
-					"click_", "click_.releases",
-				}
-				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 2, 1, 1, 0, 2, 3
+				expected = map[string]int{"all": 3, "public": 2, "private": 1, "sources": 2,
+					"forks": 1, "wikis": 0, "issues": 2}
 			default:
-				expected = []string{
-					"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
-					"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
-					"click_", "click_.releases",
-				}
-				ePublic, ePrivate, eForks, eWikis, eIssues, eReleases = 2, 2, 1, 1, 2, 3
+				expected = map[string]int{"all": 3, "public": 2, "private": 1, "sources": 2,
+					"forks": 1, "wikis": 1, "issues": 2}
 			}
-			assert.Equal(expected, tasks.keys())
-			aPublic, aPrivate, aForks, aWikis, aIssues, aReleases := tasks.Summary()
-			assert.Equal(ePublic, aPublic)
-			assert.Equal(ePrivate, aPrivate)
-			assert.Equal(eForks, aForks)
-			assert.Equal(eWikis, aWikis)
-			assert.Equal(eIssues, aIssues)
-			assert.Equal(eReleases, aReleases)
+			assert.Equal(expected, ghRepos.Counts())
 		})
 	}
 }
