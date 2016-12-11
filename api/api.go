@@ -8,6 +8,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
 	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/oauth2"
@@ -17,7 +18,7 @@ import (
 
 func prompt(message, testTokenAnswer string) (input string, err error) {
 	log := config.GetLogger()
-	log.Debug("Prompting for password with prompt: %s", message)
+	log.WithField("prompt", message).Debug("Prompting for password.")
 	fmt.Print(message)
 
 	if testTokenAnswer != "" {
@@ -50,6 +51,20 @@ type API struct {
 	User       string
 
 	TestURL string
+}
+
+// Fields is for logging. Returns the field name and values of the API struct as a logrus.Fields value.
+func (a *API) Fields() logrus.Fields {
+	return logrus.Fields{
+		"NoForks":    a.NoForks,
+		"NoIssues":   a.NoIssues,
+		"NoPrivate":  a.NoPrivate,
+		"NoPublic":   a.NoPublic,
+		"NoReleases": a.NoReleases,
+		"NoWikis":    a.NoWikis,
+		"TokenLen":   len(a.Token),
+		"User":       a.User,
+	}
 }
 
 func (a *API) getClient() *github.Client {

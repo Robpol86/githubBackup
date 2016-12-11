@@ -73,17 +73,21 @@ func (a *API) GetRepos(tasks Tasks) error {
 	for {
 		// Query API.
 		repos, response, err := client.Repositories.List(a.User, &options)
-		log.Debugf("GitHub repos API page %d response: %v", options.ListOptions.Page, response)
+		logWithFields := log.WithField("page", options.ListOptions.Page).WithField("numRepos", len(repos))
+		logWithFields.WithField("response", response).Debug("Got response from GitHub repos API.")
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "invalid character ") {
 				err = errors.New("invalid JSON response from server")
 			}
-			log.Debugf("Failed to query for repos: %s", err.Error())
+			logWithFields.WithField("error", err.Error()).Debug("Failed to query for repos.")
 			return err
 		}
 
 		// Parse.
 		for _, repo := range repos {
+			if repo.MirrorURL != nil {
+				continue
+			}
 			if (a.NoForks && *repo.Fork) || (a.NoPublic && !*repo.Private) || (a.NoPrivate && *repo.Private) {
 				continue
 			}

@@ -77,6 +77,7 @@ func Main(argv []string) int {
 	}
 
 	// Query APIs.
+	log.WithFields(ghAPI.Fields()).Info("Querying GitHub API...")
 	tasks := make(api.Tasks)
 	if !cfg.NoRepos {
 		if err = ghAPI.GetRepos(tasks); err != nil {

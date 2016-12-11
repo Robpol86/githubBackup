@@ -32,9 +32,9 @@ func TestGetReposBad(t *testing.T) {
 		"json": "invalid JSON response from server",
 	}
 	contains := map[string]string{
-		"auth": "Failed to query for repos: GET %s/user/repos: 401 Bad credentials []",
-		"user": "Failed to query for repos: GET %s/users/unknown/repos: 404 Not Found []",
-		"json": "Failed to query for repos: invalid JSON response from server",
+		"auth": "GET %s/user/repos: 401 Bad credentials []",
+		"user": "GET %s/users/unknown/repos: 404 Not Found []",
+		"json": "invalid JSON response from server",
 	}
 
 	for _, bad := range []string{"auth", "user", "json"} {
@@ -68,11 +68,12 @@ func TestGetReposBad(t *testing.T) {
 
 			// Verify log.
 			assert.Len(logs.Entries, 2)
-			if strings.Contains(contains[bad], "%s") {
-				assert.Equal(fmt.Sprintf(contains[bad], ts.URL), logs.LastEntry().Message)
-			} else {
-				assert.Equal(contains[bad], logs.LastEntry().Message)
+			assert.Equal("Failed to query for repos.", logs.LastEntry().Message)
+			expected := contains[bad]
+			if strings.Contains(expected, "%s") {
+				expected = fmt.Sprintf(contains[bad], ts.URL)
 			}
+			assert.Equal(expected, logs.LastEntry().Data["error"])
 			assert.Empty(stdout)
 			assert.Empty(stderr)
 			assert.NoError(err)
