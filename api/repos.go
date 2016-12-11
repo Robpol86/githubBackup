@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
 
 	"github.com/Robpol86/githubBackup/config"
@@ -91,9 +92,13 @@ func (a *API) parseRepo(repo *github.Repository, ghRepos *GitHubRepos, ghRelease
 		ghRepo.HasIssues = false
 	}
 
-	// Get info about releases.
+	// Collect releases for repo.
 	if !a.NoReleases && len(ghReleases) > 0 {
-		// TODO
+		for _, group := range ghReleases {
+			for _, release := range group {
+				ghRepo.Releases = append(ghRepo.Releases, release)
+			}
+		}
 	}
 
 	*ghRepos = append(*ghRepos, ghRepo)
@@ -109,7 +114,8 @@ func (a *API) getReleases(repoName string) (allReleases [][]*github.RepositoryRe
 		var releases []*github.RepositoryRelease
 		var response *github.Response
 		releases, response, err = client.Repositories.ListReleases(a.User, repoName, nil)
-		logWithFields := log.WithField("page", options.Page).WithField("numReleases", len(releases))
+		logWithFields := log.WithFields(logrus.Fields{"page": options.Page, "numReleases": len(releases),
+			"repo": repoName})
 		logWithFields.WithField("response", response).Debug("Got response from GitHub releases API.")
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "invalid character ") {
