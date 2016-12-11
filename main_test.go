@@ -90,3 +90,5 @@ func TestMainTokenError(t *testing.T) {
 	assert.Contains(stdout, "githubBackup "+config.Version)
 	assert.Contains(stderr, "Not querying GitHub API: ")
 }
+
+// TODO: Test api error and empty response. Add testing argument to Main().

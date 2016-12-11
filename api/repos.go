@@ -58,7 +58,7 @@ func (g *GitHubRepos) Counts() map[string]int {
 	return counts
 }
 
-func (a *API) parseRepo(repo *github.Repository, ghRepos *GitHubRepos) {
+func (a *API) parseRepo(repo *github.Repository, ghRepos *GitHubRepos, ghReleases [][]*github.RepositoryRelease) {
 	ghRepo := GitHubRepo{
 		Name:      *repo.Name,
 		Size:      *repo.Size,
@@ -84,7 +84,45 @@ func (a *API) parseRepo(repo *github.Repository, ghRepos *GitHubRepos) {
 		ghRepo.HasIssues = false
 	}
 
+	// Get info about releases.
+	if !a.NoReleases && len(ghReleases) > 0 {
+		// TODO
+	}
+
 	*ghRepos = append(*ghRepos, ghRepo)
+}
+
+func (a *API) getReleases(repoName string) (allReleases [][]*github.RepositoryRelease, err error) {
+	log := config.GetLogger()
+	client := a.getClient()
+	options := github.ListOptions{}
+
+	for {
+		// Query API.
+		var releases []*github.RepositoryRelease
+		var response *github.Response
+		releases, response, err = client.Repositories.ListReleases(a.User, repoName, nil)
+		logWithFields := log.WithField("page", options.Page).WithField("numReleases", len(releases))
+		logWithFields.WithField("response", response).Debug("Got response from GitHub releases API.")
+		if err != nil {
+			if strings.HasPrefix(err.Error(), "invalid character ") {
+				err = errors.New("invalid JSON response from server")
+			}
+			logWithFields.WithField("error", err.Error()).Debug("Failed to query for releases.")
+			return
+		}
+
+		// Append.
+		allReleases = append(allReleases, releases)
+
+		// Next page or exit.
+		if response.NextPage == 0 {
+			break
+		}
+		options.Page = response.NextPage
+	}
+
+	return
 }
 
 // GetRepos retrieves the list of public and private GitHub repos on the user's account.
@@ -126,7 +164,14 @@ func (a *API) GetRepos(ghRepos *GitHubRepos) error {
 			} else if a.NoPrivate && *repo.Private {
 				logWithFields.Debugf("Skipping private repo: %s", *repo.Name)
 			} else {
-				a.parseRepo(repo, ghRepos)
+				var ghReleases [][]*github.RepositoryRelease
+				if !a.NoReleases {
+					// TODO: ghReleases, err = a.getReleases(*repo.Name)
+					if err != nil {
+						return err
+					}
+				}
+				a.parseRepo(repo, ghRepos, ghReleases)
 			}
 		}
 
