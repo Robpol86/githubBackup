@@ -56,8 +56,8 @@ func logSummary(ghRepos *api.GitHubRepos) {
 //
 // :param argv: CLI arguments to pass to docopt.Parse().
 //
-// :param exitOk: Passed to docopt.Parse(). If true docopt.Parse calls os.Exit() which aborts tests.
-func Main(argv []string) int {
+// :param testURL: For testing only. Query this base URL instead of the GitHub API URL.
+func Main(argv []string, testURL string) int {
 	// Initialize configuration.
 	cfg, err := config.NewConfig(argv)
 	if err != nil {
@@ -79,7 +79,8 @@ func Main(argv []string) int {
 		return 1
 	}
 
-	// Query APIs.
+	// Query APIs for repos and gists.
+	ghAPI.TestURL = testURL
 	log.WithFields(ghAPI.Fields()).Info("Querying GitHub API...")
 	ghRepos := api.GitHubRepos{}
 	if !cfg.NoRepos {
@@ -99,11 +100,10 @@ func Main(argv []string) int {
 	// Backup.
 	logSummary(&ghRepos)
 
-	// TODO.
 	return 0
 }
 
 // main is the real main function that is called automatically when running the program.
 func main() {
-	os.Exit(Main(nil))
+	os.Exit(Main(nil, ""))
 }

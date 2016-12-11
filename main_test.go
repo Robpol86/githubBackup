@@ -63,7 +63,7 @@ func TestMainLogError(t *testing.T) {
 	defer testUtils.ResetLogger()
 	stdout, stderr, err := testUtils.WithCapSys(func() {
 		testUtils.ResetLogger()
-		ret := Main([]string{"-l", logFile, tmpdir})
+		ret := Main([]string{"-l", logFile, tmpdir}, "")
 		assert.Equal(2, ret)
 	})
 
@@ -82,7 +82,7 @@ func TestMainTokenError(t *testing.T) {
 
 	stdout, stderr, err := testUtils.WithCapSys(func() {
 		testUtils.ResetLogger()
-		ret := Main([]string{tmpdir})
+		ret := Main([]string{tmpdir}, "")
 		assert.Equal(1, ret)
 	})
 
