@@ -107,7 +107,7 @@ func (a *API) parseRepo(repo *github.Repository, ghRepos *GitHubRepos, ghRelease
 func (a *API) getReleases(repoName string) (allReleases [][]*github.RepositoryRelease, err error) {
 	log := config.GetLogger()
 	client := a.getClient()
-	options := github.ListOptions{}
+	options := github.ListOptions{PerPage: 100}
 
 	for {
 		// Query API.
@@ -146,11 +146,12 @@ func (a *API) GetRepos(ghRepos *GitHubRepos) error {
 	client := a.getClient()
 
 	// Configure request options.
-	var options github.RepositoryListOptions
+	options := github.RepositoryListOptions{}
+	options.PerPage = 100
 	if a.NoPrivate {
-		options = github.RepositoryListOptions{Visibility: "public"}
+		options.Visibility = "public"
 	} else if a.NoPublic {
-		options = github.RepositoryListOptions{Visibility: "private"}
+		options.Visibility = "private"
 	}
 
 	for {
