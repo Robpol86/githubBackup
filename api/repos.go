@@ -3,62 +3,57 @@ package api
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/google/go-github/github"
 
 	"github.com/Robpol86/githubBackup/config"
 )
 
-func (a *API) parseRepo(repo *github.Repository, tasks Tasks) {
-	// Create task.
-	task := Task{
+type GitHubRepo struct {
+	Name     string
+	Size     int
+	Fork     bool
+	Private  bool
+	PushedAt time.Time
+	CloneURL string
+	WikiURL  string
+	HasIssues bool
+}
+
+func (a *API) parseRepo(repo *github.Repository, releases []*github.RepositoryRelease, ghRepos *[]GitHubRepo) {
+	ghRepo := GitHubRepo{
 		Name:     *repo.Name,
+		Size:     *repo.Size,
+		Fork:     *repo.Fork,
 		Private:  *repo.Private,
 		PushedAt: repo.PushedAt.Time,
-		Size:     *repo.Size,
-
 		CloneURL: *repo.CloneURL,
-		Fork:     *repo.Fork,
+		HasIssues: *repo.HasIssues,
 	}
+
+	// If private use SSH clone url instead of HTTPS.
 	if *repo.Private {
-		task.CloneURL = *repo.SSHURL
+		ghRepo.CloneURL = *repo.SSHURL
 	}
 
-	// Add task.
-	dir := tasks.validDir(task.Name)
-	tasks[dir] = task
-
-	// Add wiki as a separate repo.
+	// If it has a wiki get the right clone URL for that.
 	if !a.NoWikis && *repo.HasWiki {
-		wikiTask := task.dup()
-		wikiTask.IsWiki = true
-		wikiTask.Name += ".wiki"
-		wikiTask.CloneURL = task.CloneURL[:len(task.CloneURL)-4] + ".wiki.git"
-		tasks[tasks.validDir(dir+".wiki")] = wikiTask
+		ghRepo.WikiURL = ghRepo.CloneURL[:len(ghRepo.CloneURL)-4] + ".wiki.git"
 	}
 
-	// Add issues.
-	if !a.NoIssues && *repo.HasIssues {
-		issueTask := task.dup()
-		issueTask.Name += ".issues"
-		issueTask.JustIssues = true
-		tasks[tasks.validDir(dir+".issues")] = issueTask
+	// Override if no issues desired.
+	if a.NoIssues {
+		ghRepo.HasIssues = false
 	}
 
-	// Add releases.
-	if !a.NoReleases {
-		// Nothing in API response to indicate if repo has releases. Assuming yes for all repos for now.
-		releasesTask := task.dup()
-		releasesTask.Name += ".releases"
-		releasesTask.JustReleases = true
-		tasks[tasks.validDir(dir+".releases")] = releasesTask
-	}
+	*ghRepos = append(*ghRepos, ghRepo)
 }
 
 // GetRepos retrieves the list of public and private GitHub repos on the user's account.
 //
-// :param tasks: Already-initialized Tasks map to add tasks to.
-func (a *API) GetRepos(tasks Tasks) error {
+// :param ghRepos: Slice of GitHubRepo values to populate.
+func (a *API) GetRepos(ghRepos []GitHubRepo) error {
 	log := config.GetLogger()
 	client := a.getClient()
 
@@ -90,7 +85,19 @@ func (a *API) GetRepos(tasks Tasks) error {
 			if (a.NoForks && *repo.Fork) || (a.NoPublic && !*repo.Private) || (a.NoPrivate && *repo.Private) {
 				continue
 			}
-			a.parseRepo(repo, tasks)
+			var releases []*github.RepositoryRelease
+			if !a.NoReleases {
+				releases, response, err = client.Repositories.ListReleases(a.User, *repo.Name, nil)
+				log.Debugf("GitHub %s releases API response: %v", *repo.Name, response)
+				if err != nil {
+					if strings.HasPrefix(err.Error(), "invalid character ") {
+						err = errors.New("invalid JSON response from server")
+					}
+					log.Debugf("Failed to query %s for releases: %s", *repo.Name, err.Error())
+					return err
+				}
+			}
+			a.parseRepo(repo, releases, &ghRepos)
 		}
 
 		// Next page or exit.

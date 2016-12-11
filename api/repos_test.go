@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Robpol86/githubBackup/testUtils"
+	"github.com/Robpol86/githubBackup/download"
 )
 
 func TestGetReposBad(t *testing.T) {
@@ -81,16 +82,6 @@ func TestGetReposBad(t *testing.T) {
 
 }
 
-func (t Tasks) keys() []string {
-	out := make([]string, len(t))
-	i := 0
-	for out[i] = range t {
-		i++
-	}
-	sort.Strings(out)
-	return out
-}
-
 func TestGetReposFilters(t *testing.T) {
 	assert := require.New(t)
 	_, file, _, _ := runtime.Caller(0)
@@ -106,7 +97,7 @@ func TestGetReposFilters(t *testing.T) {
 	for _, no := range []string{"forks", "issues", "private", "public", "releases", "wikis", "NEITHER"} {
 		t.Run(no, func(t *testing.T) {
 			assert := require.New(t)
-			tasks := make(Tasks)
+			tasks := make(download.Tasks)
 
 			// Run.
 			logs, stdout, stderr, err := testUtils.WithLogging(func() {
