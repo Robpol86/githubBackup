@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Sirupsen/logrus"
+
 	"github.com/Robpol86/githubBackup/api"
 	"github.com/Robpol86/githubBackup/config"
 )
@@ -15,37 +17,37 @@ func plural(i int, singular, plural string) string {
 	return plural
 }
 
-func logSummary(tasks api.Tasks) {
+func toFields(counts map[string]int) logrus.Fields {
+	fields := logrus.Fields{}
+	for key, value := range counts {
+		fields[key] = value
+	}
+	return fields
+}
+
+func logSummary(ghRepos *api.GitHubRepos) {
 	log := config.GetLogger()
-	public, private, forks, wikis, issues, releases := tasks.Summary()
-	repos := public + private
-	files := issues + releases
 
 	// Repos.
-	if files > 0 {
-		log.Infof("Preparing to backup %d repo%s and %d or so files.", repos, plural(repos, "", "s"), files)
+	if counts := ghRepos.Counts(); counts["all"] > 0 {
+		r := counts["all"]
+		p := counts["private"]
+		f := counts["forks"]
+		rp := plural(r, "", "s")
+		fp := plural(f, "", "s")
+		log.WithFields(toFields(counts)).Infof("Found %d repo%s (%d private and %d fork%s).", r, rp, p, f, fp)
+		if counts["wikis"] == 0 {
+			log.Info("--> No wikis found.")
+		} else {
+			log.Infof("--> %d of them have wikis.", counts["wikis"])
+		}
+		if counts["issues"] == 0 {
+			log.Info("--> No GitHub Issues found.")
+		} else {
+			log.Infof("--> %d of them have GitHub Issies.", counts["issues"])
+		}
 	} else {
-		log.Infof("Preparing to backup %d repo%s.", repos, plural(repos, "", "s"))
-	}
-	msg := fmt.Sprintf("--> %d public and %d private repos", public, private)
-	if wikis > 0 && forks > 0 {
-		msg += fmt.Sprintf(" (including %d wiki%s and %d fork%s)", wikis, plural(wikis, "", "s"),
-			forks, plural(forks, "", "s"))
-	} else if wikis > 0 {
-		msg += fmt.Sprintf(" (including %d wiki%s)", wikis, plural(wikis, "", "s"))
-	} else if forks > 0 {
-		msg += fmt.Sprintf(" (including %d fork%s)", forks, plural(forks, "", "s"))
-	}
-	log.Info(msg + ".")
-
-	// Releases.
-	if releases > 0 {
-		log.Infof("--> %d repo%s may contain one or more assets in releases.", releases, plural(releases, "", "s"))
-	}
-
-	// Issues.
-	if issues > 0 {
-		log.Infof("--> %d repo%s have GitHub issues to backup as JSON files.", issues, plural(issues, "", "s"))
+		log.WithFields(toFields(counts)).Warn("Didn't find any GitHub repositories to backup.")
 	}
 }
 
@@ -53,8 +55,8 @@ func logSummary(tasks api.Tasks) {
 //
 // :param argv: CLI arguments to pass to docopt.Parse().
 //
-// :param exitOk: Passed to docopt.Parse(). If true docopt.Parse calls os.Exit() which aborts tests.
-func Main(argv []string) int {
+// :param testURL: For testing only. Query this base URL instead of the GitHub API URL.
+func Main(argv []string, testURL string) int {
 	// Initialize configuration.
 	cfg, err := config.NewConfig(argv)
 	if err != nil {
@@ -76,11 +78,12 @@ func Main(argv []string) int {
 		return 1
 	}
 
-	// Query APIs.
+	// Query APIs for repos and gists.
+	ghAPI.TestURL = testURL
 	log.WithFields(ghAPI.Fields()).Info("Querying GitHub API...")
-	tasks := make(api.Tasks)
+	ghRepos := api.GitHubRepos{}
 	if !cfg.NoRepos {
-		if err = ghAPI.GetRepos(tasks); err != nil {
+		if err = ghAPI.GetRepos(&ghRepos); err != nil {
 			log.Errorf("Querying GitHub API for repositories failed: %s", err.Error())
 			return 1
 		}
@@ -88,19 +91,18 @@ func Main(argv []string) int {
 	if !cfg.NoGist {
 		// TODO
 	}
-	if len(tasks) == 0 {
+	if len(ghRepos) == 0 {
 		log.Warn("No repos or gists to backup. Nothing to do.")
 		return 1
 	}
 
 	// Backup.
-	logSummary(tasks)
+	logSummary(&ghRepos)
 
-	// TODO.
 	return 0
 }
 
 // main is the real main function that is called automatically when running the program.
 func main() {
-	os.Exit(Main(nil))
+	os.Exit(Main(nil, ""))
 }
