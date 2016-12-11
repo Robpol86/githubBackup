@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"path"
 	"runtime"
+	"sort"
 	"strings"
 	"testing"
 
@@ -143,92 +144,6 @@ func TestGetReposFilters(t *testing.T) {
 	}
 }
 
-func TestAPI_GetRepos_parseRepo(t *testing.T) {
-	assert := require.New(t)
-	_, file, _, _ := runtime.Caller(0)
-	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "repos_test.json"))
-	assert.NoError(err)
-
-	// HTTP response.
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Write(reply)
-	}))
-	defer ts.Close()
-
-	// Run.
-	tasks := make(Tasks)
-	_, stdout, stderr, err := testUtils.WithLogging(func() {
-		api := &API{TestURL: ts.URL}
-		err := api.GetRepos(tasks)
-		assert.NoError(err)
-	})
-
-	// Verify log.
-	assert.Empty(stdout)
-	assert.Empty(stderr)
-	assert.NoError(err)
-
-	// Verify public repo.
-	assert.Equal("appveyor-artifacts", tasks["appveyor-artifacts"].Name)
-	assert.Equal(false, tasks["appveyor-artifacts"].Private)
-	assert.Equal(82, tasks["appveyor-artifacts"].Size)
-	assert.Equal("https://github.com/Robpol86/appveyor-artifacts.git", tasks["appveyor-artifacts"].CloneURL)
-	assert.Equal(false, tasks["appveyor-artifacts"].Fork)
-	assert.Equal(false, tasks["appveyor-artifacts"].IsWiki)
-	assert.Equal(false, tasks["appveyor-artifacts"].JustIssues)
-	assert.Equal(false, tasks["appveyor-artifacts"].JustReleases)
-
-	// Verify issues.
-	assert.Equal("appveyor-artifacts.issues", tasks["appveyor-artifacts.issues"].Name)
-	assert.Equal(false, tasks["appveyor-artifacts.issues"].Private)
-	assert.Equal(82, tasks["appveyor-artifacts.issues"].Size)
-	assert.Empty(tasks["appveyor-artifacts.issues"].CloneURL)
-	assert.Equal(false, tasks["appveyor-artifacts.issues"].Fork)
-	assert.Equal(false, tasks["appveyor-artifacts.issues"].IsWiki)
-	assert.Equal(true, tasks["appveyor-artifacts.issues"].JustIssues)
-	assert.Equal(false, tasks["appveyor-artifacts.issues"].JustReleases)
-
-	// Verify releases.
-	assert.Equal("appveyor-artifacts.releases", tasks["appveyor-artifacts.releases"].Name)
-	assert.Equal(false, tasks["appveyor-artifacts.releases"].Private)
-	assert.Equal(82, tasks["appveyor-artifacts.releases"].Size)
-	assert.Empty(tasks["appveyor-artifacts.releases"].CloneURL)
-	assert.Equal(false, tasks["appveyor-artifacts.releases"].Fork)
-	assert.Equal(false, tasks["appveyor-artifacts.releases"].IsWiki)
-	assert.Equal(false, tasks["appveyor-artifacts.releases"].JustIssues)
-	assert.Equal(true, tasks["appveyor-artifacts.releases"].JustReleases)
-
-	// Verify private repo.
-	assert.Equal("Documents", tasks["Documents"].Name)
-	assert.Equal(true, tasks["Documents"].Private)
-	assert.Equal(148, tasks["Documents"].Size)
-	assert.Equal("git@github.com:Robpol86/Documents.git", tasks["Documents"].CloneURL)
-	assert.Equal(false, tasks["Documents"].Fork)
-	assert.Equal(false, tasks["Documents"].IsWiki)
-	assert.Equal(false, tasks["Documents"].JustIssues)
-	assert.Equal(false, tasks["Documents"].JustReleases)
-
-	// Verify wikis.
-	assert.Equal("Documents.wiki", tasks["Documents.wiki"].Name)
-	assert.Equal(true, tasks["Documents.wiki"].Private)
-	assert.Equal(148, tasks["Documents.wiki"].Size)
-	assert.Equal("git@github.com:Robpol86/Documents.wiki.git", tasks["Documents.wiki"].CloneURL)
-	assert.Equal(false, tasks["Documents.wiki"].Fork)
-	assert.Equal(true, tasks["Documents.wiki"].IsWiki)
-	assert.Equal(false, tasks["Documents.wiki"].JustIssues)
-	assert.Equal(false, tasks["Documents.wiki"].JustReleases)
-
-	// Verify fork repo.
-	assert.Equal("click*", tasks["click_"].Name)
-	assert.Equal(false, tasks["click_"].Private)
-	assert.Equal(1329, tasks["click_"].Size)
-	assert.Equal("https://github.com/Robpol86/click.git", tasks["click_"].CloneURL)
-	assert.Equal(true, tasks["click_"].Fork)
-	assert.Equal(false, tasks["click_"].IsWiki)
-	assert.Equal(false, tasks["click_"].JustIssues)
-	assert.Equal(false, tasks["click_"].JustReleases)
-}
-
 // From https://github.com/evermax/stargraph/blob/3491c0/github/repoinfo.go#L109
 func linksFormat(url string) string {
 	if strings.Contains(url, "?") {
@@ -256,10 +171,10 @@ func TestAPI_GetRepos_Pagination(t *testing.T) {
 	defer ts.Close()
 
 	// Run.
-	tasks := make(Tasks)
-	_, stdout, stderr, err := testUtils.WithLogging(func() {
+	ghRepos := GitHubRepos{}
+	stdout, stderr, err := testUtils.WithCapSys(func() {
 		api := &API{TestURL: ts.URL}
-		err := api.GetRepos(tasks)
+		err := api.GetRepos(&ghRepos)
 		assert.NoError(err)
 	})
 
@@ -269,13 +184,11 @@ func TestAPI_GetRepos_Pagination(t *testing.T) {
 	assert.NoError(err)
 
 	// Verify repos.
-	expected := []string{
-		"Documents", "Documents.issues", "Documents.releases", "Documents.wiki",
-		"Documents0", "Documents0.issues", "Documents0.releases", "Documents0.wiki",
-		"appveyor-artifacts", "appveyor-artifacts.issues", "appveyor-artifacts.releases",
-		"appveyor-artifacts0", "appveyor-artifacts0.issues", "appveyor-artifacts0.releases",
-		"click_", "click_.releases",
-		"click_0", "click_0.releases",
+	expected := []string{"Documents", "Documents", "appveyor-artifacts", "appveyor-artifacts", "click*", "click*"}
+	var actual []string
+	for _, repo := range ghRepos {
+		actual = append(actual, repo.Name)
 	}
-	assert.Equal(expected, tasks.keys())
+	sort.Strings(actual)
+	assert.Equal(expected, actual)
 }
