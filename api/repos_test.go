@@ -92,7 +92,7 @@ func TestAPI_GetReposFilters(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	for _, no := range []string{"forks", "issues", "private", "public", "releases", "wikis", "NEITHER"} {
+	for _, no := range []string{"forks", "issues", "private", "public", "wikis", "NEITHER"} {
 		t.Run(no, func(t *testing.T) {
 			assert := require.New(t)
 			ghRepos := GitHubRepos{}

@@ -2,8 +2,11 @@ package api
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"path"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -72,6 +75,57 @@ func TestAPI_GetGistsBad(t *testing.T) {
 			assert.Empty(stdout)
 			assert.Empty(stderr)
 			assert.NoError(err)
+		})
+	}
+}
+
+func TestAPI_GetGistsFilters(t *testing.T) {
+	assert := require.New(t)
+	_, file, _, _ := runtime.Caller(0)
+	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "gists_test.json"))
+	assert.NoError(err)
+
+	// HTTP response.
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Write(reply)
+	}))
+	defer ts.Close()
+
+	for _, no := range []string{"comments", "private", "public", "NEITHER"} {
+		t.Run(no, func(t *testing.T) {
+			assert := require.New(t)
+			ghGists := GitHubGists{}
+
+			// Run.
+			stdout, stderr, err := testUtils.WithCapSys(func() {
+				api := &API{
+					TestURL:    ts.URL,
+					NoComments: no == "comments",
+					NoPrivate:  no == "private",
+					NoPublic:   no == "public",
+				}
+				err := api.GetGists(&ghGists)
+				assert.NoError(err)
+			})
+
+			// Verify streams.
+			assert.Empty(stdout)
+			assert.Empty(stderr)
+			assert.NoError(err)
+
+			// Verify repos.
+			var expected map[string]int
+			switch no {
+			case "comments":
+				expected = map[string]int{"all": 5, "public": 2, "private": 3, "comments": 0}
+			case "private":
+				expected = map[string]int{"all": 2, "public": 2, "private": 0, "comments": 1}
+			case "public":
+				expected = map[string]int{"all": 3, "public": 0, "private": 3, "comments": 0}
+			default:
+				expected = map[string]int{"all": 5, "public": 2, "private": 3, "comments": 1}
+			}
+			assert.Equal(expected, ghGists.Counts())
 		})
 	}
 }
