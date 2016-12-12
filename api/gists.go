@@ -64,9 +64,9 @@ func (a *API) parseGist(gist *github.Gist, name string, size int, ghGists *GitHu
 	*ghGists = append(*ghGists, ghGist)
 }
 
-// GetGists retrieves the list of public and private GitHub gists on the user's account.
+// GetGists retrieves the list of public and secret GitHub gists on the user's account.
 //
-// :param ghRepos: Add gists to this.
+// :param ghGists: Add gists to this.
 func (a *API) GetGists(ghGists *GitHubGists) error {
 	log := config.GetLogger()
 	client := a.getClient()
