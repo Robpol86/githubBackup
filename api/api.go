@@ -41,6 +41,7 @@ func prompt(message, testTokenAnswer string) (input string, err error) {
 
 // API holds fields and functions related to querying the GitHub API.
 type API struct {
+	NoComments bool
 	NoForks    bool
 	NoIssues   bool
 	NoPrivate  bool
@@ -56,6 +57,7 @@ type API struct {
 // Fields is for logging. Returns the field name and values of the API struct as a logrus.Fields value.
 func (a *API) Fields() logrus.Fields {
 	return logrus.Fields{
+		"NoComments": a.NoComments,
 		"NoForks":    a.NoForks,
 		"NoIssues":   a.NoIssues,
 		"NoPrivate":  a.NoPrivate,
@@ -89,6 +91,7 @@ func (a *API) getClient() *github.Client {
 // :param testTokenAnswer: For testing. Don't prompt for token, use this value instead.
 func NewAPI(config config.Config, testTokenAnswer string) (api API, err error) {
 	api = API{
+		NoComments: config.NoComments,
 		NoForks:    config.NoForks,
 		NoIssues:   config.NoIssues,
 		NoPrivate:  config.NoPrivate,
