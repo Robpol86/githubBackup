@@ -116,6 +116,11 @@ func (a *API) GetRepos(ghRepos *GitHubRepos) error {
 			return err
 		}
 
+		// Note rate limiting.
+		a.Limit = response.Limit
+		a.Remaining = response.Remaining
+		a.Reset = response.Reset
+
 		// Parse.
 		for _, repo := range repos {
 			if repo.MirrorURL != nil {
