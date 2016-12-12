@@ -28,7 +28,7 @@ Usage:
 
 Options:
     -C --no-colors      Disable colored log levels and field keys.
-    -D --no-releases	Skip backing up your repo releases/downloads.
+    -D --no-releases    Skip backing up your repo releases/downloads.
     -E --no-private     Skip backing up your private repos and secret Gists.
     -F --no-forks       Skip backing up forked repos (doesn't apply to Gists).
     -G --no-gist        Skip backing up your GitHub Gists.
