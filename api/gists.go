@@ -1,10 +1,14 @@
 package api
 
 import (
+	"errors"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/google/go-github/github"
+
+	"github.com/Robpol86/githubBackup/config"
 )
 
 // GitHubGist holds data for one GitHub Gist.
@@ -42,17 +46,9 @@ func (g *GitHubGists) Counts() map[string]int {
 	return counts
 }
 
-func (a *API) parseGist(gist *github.Gist, ghGists *GitHubGists) {
-	var fileNames []string
-	var size int
-	for name, data := range gist.Files {
-		fileNames = append(fileNames, string(name))
-		size += *data.Size
-	}
-	sort.Strings(fileNames)
-
+func (a *API) parseGist(gist *github.Gist, name string, size int, ghGists *GitHubGists) {
 	ghGist := GitHubGist{
-		Name:        fileNames[0],
+		Name:        name,
 		Size:        size,
 		Private:     !*gist.Public,
 		PushedAt:    *gist.UpdatedAt,
@@ -66,4 +62,58 @@ func (a *API) parseGist(gist *github.Gist, ghGists *GitHubGists) {
 	}
 
 	*ghGists = append(*ghGists, ghGist)
+}
+
+// GetGists retrieves the list of public and private GitHub gists on the user's account.
+//
+// :param ghRepos: Add gists to this.
+func (a *API) GetGists(ghGists *GitHubGists) error {
+	log := config.GetLogger()
+	client := a.getClient()
+
+	// Configure request options.
+	options := github.GistListOptions{}
+	options.PerPage = 100
+
+	for {
+		// Query API.
+		gists, response, err := client.Gists.List(a.User, &options)
+		logWithFields := log.WithField("page", options.ListOptions.Page).WithField("numGists", len(gists))
+		logWithFields.WithField("response", response).Debug("Got response from GitHub gists API.")
+		if err != nil {
+			if strings.HasPrefix(err.Error(), "invalid character ") {
+				err = errors.New("invalid JSON response from server")
+			}
+			logWithFields.WithField("error", err.Error()).Debug("Failed to query for gists.")
+			return err
+		}
+
+		// Parse.
+		for _, gist := range gists {
+			var fileNames []string
+			var size int
+			for name, data := range gist.Files {
+				fileNames = append(fileNames, string(name))
+				size += *data.Size
+			}
+			sort.Strings(fileNames)
+			name := fileNames[0]
+
+			if a.NoPublic && *gist.Public {
+				logWithFields.Debugf("Skipping public gist: %s", name)
+			} else if a.NoPrivate && !*gist.Public {
+				logWithFields.Debugf("Skipping secret gist: %s", name)
+			} else {
+				a.parseGist(gist, name, size, ghGists)
+			}
+		}
+
+		// Next page or exit.
+		if response.NextPage == 0 {
+			break
+		}
+		options.ListOptions.Page = response.NextPage
+	}
+
+	return nil
 }
