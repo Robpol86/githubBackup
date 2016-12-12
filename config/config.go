@@ -29,12 +29,13 @@ Usage:
 Options:
     -C --no-colors      Disable colored log levels and field keys.
     -D --no-releases	Skip backing up your repo releases/downloads.
-    -E --no-private     Skip backing up your private repos and private Gists.
-    -F --no-forks       Skip backing up forked repos.
+    -E --no-private     Skip backing up your private repos and secret Gists.
+    -F --no-forks       Skip backing up forked repos (doesn't apply to Gists).
     -G --no-gist        Skip backing up your GitHub Gists.
     -h --help           Show this screen.
     -I --no-issues      Skip backing up your repo issues.
     -l FILE --log=FILE  Log output to file.
+    -M --no-comments    Skip backing up your Gist comments.
     -P --no-public      Skip backing up your public repos and public Gists.
     -q --quiet          Don't print anything to stdout/stderr (implies -T).
     -R --no-repos       Skip backing up your GitHub repos.
@@ -70,6 +71,7 @@ type Config struct { // Sorted by docopt short option names above.
 	NoGist     bool
 	NoIssues   bool
 	LogFile    string
+	NoComments bool
 	NoPublic   bool
 	Quiet      bool
 	NoRepos    bool
@@ -102,6 +104,7 @@ func NewConfig(argv []string) (Config, error) {
 		NoGist:     parseBool(parsed["--no-gist"]),
 		NoIssues:   parseBool(parsed["--no-issues"]),
 		LogFile:    parseString(parsed["--log"]),
+		NoComments: parseBool(parsed["--no-comments"]),
 		NoPublic:   parseBool(parsed["--no-public"]),
 		Quiet:      parseBool(parsed["--quiet"]),
 		NoRepos:    parseBool(parsed["--no-repos"]),

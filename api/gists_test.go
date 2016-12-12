@@ -16,7 +16,7 @@ import (
 	"github.com/Robpol86/githubBackup/testUtils"
 )
 
-func TestAPI_GetReposBad(t *testing.T) {
+func TestAPI_GetGistsBad(t *testing.T) {
 	user := map[string]string{"auth": "", "user": "unknown", "json": ""}
 	token := map[string]string{"auth": "bad token", "user": "", "json": ""}
 	replyCode := map[string]int{"auth": 401, "user": 404, "json": 200}
@@ -26,13 +26,13 @@ func TestAPI_GetReposBad(t *testing.T) {
 		"json": "{':",
 	}
 	errorMsg := map[string]string{
-		"auth": "GET %s/user/repos?per_page=100: 401 Bad credentials []",
-		"user": "GET %s/users/unknown/repos?per_page=100: 404 Not Found []",
+		"auth": "GET %s/gists?per_page=100: 401 Bad credentials []",
+		"user": "GET %s/users/unknown/gists?per_page=100: 404 Not Found []",
 		"json": "invalid JSON response from server",
 	}
 	contains := map[string]string{
-		"auth": "GET %s/user/repos?per_page=100: 401 Bad credentials []",
-		"user": "GET %s/users/unknown/repos?per_page=100: 404 Not Found []",
+		"auth": "GET %s/gists?per_page=100: 401 Bad credentials []",
+		"user": "GET %s/users/unknown/gists?per_page=100: 404 Not Found []",
 		"json": "invalid JSON response from server",
 	}
 
@@ -57,7 +57,7 @@ func TestAPI_GetReposBad(t *testing.T) {
 			// Run.
 			logs, stdout, stderr, err := testUtils.WithLogging(func() {
 				api := &API{User: user[bad], Token: token[bad], TestURL: ts.URL}
-				err := api.GetRepos(nil)
+				err := api.GetGists(nil)
 				if strings.Contains(errorMsg[bad], "%s") {
 					assert.EqualError(err, fmt.Sprintf(errorMsg[bad], ts.URL))
 				} else {
@@ -67,7 +67,7 @@ func TestAPI_GetReposBad(t *testing.T) {
 
 			// Verify log.
 			assert.Len(logs.Entries, 2)
-			assert.Equal("Failed to query for repos.", logs.LastEntry().Message)
+			assert.Equal("Failed to query for gists.", logs.LastEntry().Message)
 			expected := contains[bad]
 			if strings.Contains(expected, "%s") {
 				expected = fmt.Sprintf(contains[bad], ts.URL)
@@ -80,10 +80,10 @@ func TestAPI_GetReposBad(t *testing.T) {
 	}
 }
 
-func TestAPI_GetReposFilters(t *testing.T) {
+func TestAPI_GetGistsFilters(t *testing.T) {
 	assert := require.New(t)
 	_, file, _, _ := runtime.Caller(0)
-	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "repos_test.json"))
+	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "gists_test.json"))
 	assert.NoError(err)
 
 	// HTTP response.
@@ -92,22 +92,20 @@ func TestAPI_GetReposFilters(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	for _, no := range []string{"forks", "issues", "private", "public", "wikis", "NEITHER"} {
+	for _, no := range []string{"comments", "private", "public", "NEITHER"} {
 		t.Run(no, func(t *testing.T) {
 			assert := require.New(t)
-			ghRepos := GitHubRepos{}
+			ghGists := GitHubGists{}
 
 			// Run.
 			stdout, stderr, err := testUtils.WithCapSys(func() {
 				api := &API{
-					TestURL:   ts.URL,
-					NoForks:   no == "forks",
-					NoIssues:  no == "issues",
-					NoPrivate: no == "private",
-					NoPublic:  no == "public",
-					NoWikis:   no == "wikis",
+					TestURL:    ts.URL,
+					NoComments: no == "comments",
+					NoPrivate:  no == "private",
+					NoPublic:   no == "public",
 				}
-				err := api.GetRepos(&ghRepos)
+				err := api.GetGists(&ghGists)
 				assert.NoError(err)
 			})
 
@@ -116,46 +114,28 @@ func TestAPI_GetReposFilters(t *testing.T) {
 			assert.Empty(stderr)
 			assert.NoError(err)
 
-			// Verify repos.
+			// Verify gists.
 			var expected map[string]int
 			switch no {
-			case "forks":
-				expected = map[string]int{"all": 2, "public": 1, "private": 1, "sources": 2,
-					"forks": 0, "wikis": 1, "issues": 2}
-			case "issues":
-				expected = map[string]int{"all": 3, "public": 2, "private": 1, "sources": 2,
-					"forks": 1, "wikis": 1, "issues": 0}
+			case "comments":
+				expected = map[string]int{"all": 5, "public": 2, "private": 3, "comments": 0}
 			case "private":
-				expected = map[string]int{"all": 2, "public": 2, "private": 0, "sources": 1,
-					"forks": 1, "wikis": 0, "issues": 1}
+				expected = map[string]int{"all": 2, "public": 2, "private": 0, "comments": 1}
 			case "public":
-				expected = map[string]int{"all": 1, "public": 0, "private": 1, "sources": 1,
-					"forks": 0, "wikis": 1, "issues": 1}
-			case "wikis":
-				expected = map[string]int{"all": 3, "public": 2, "private": 1, "sources": 2,
-					"forks": 1, "wikis": 0, "issues": 2}
+				expected = map[string]int{"all": 3, "public": 0, "private": 3, "comments": 0}
 			default:
-				expected = map[string]int{"all": 3, "public": 2, "private": 1, "sources": 2,
-					"forks": 1, "wikis": 1, "issues": 2}
+				expected = map[string]int{"all": 5, "public": 2, "private": 3, "comments": 1}
 			}
-			assert.Equal(expected, ghRepos.Counts())
+			assert.Equal(expected, ghGists.Counts())
 		})
 	}
 }
 
-// From https://github.com/evermax/stargraph/blob/3491c0/github/repoinfo.go#L109
-func linksFormat(url string) string {
-	if strings.Contains(url, "?") {
-		return "<" + url + "&page=%d>; rel=\"next\", <" + url + "&page=%d>; rel=\"last\""
-	}
-	return "<" + url + "?page=%d>; rel=\"next\", <" + url + "?page=%d>; rel=\"last\""
-}
-
-func TestAPI_GetReposPagination(t *testing.T) {
-	// Link: <https://api.github.com/organizations/12824109/repos?per_page=2&page=2>; rel="next", <https://api.github.com/organizations/12824109/repos?per_page=2&page=4>; rel="last"
+func TestAPI_GetGistsPagination(t *testing.T) {
+	// Link: <https://api.github.com/gists?per_page=2&page=2>; rel="next", <https://api.github.com/gists?per_page=2&page=1500>; rel="last"
 	assert := require.New(t)
 	_, file, _, _ := runtime.Caller(0)
-	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "repos_test.json"))
+	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "gists_test.json"))
 	assert.NoError(err)
 
 	// HTTP response.
@@ -170,10 +150,10 @@ func TestAPI_GetReposPagination(t *testing.T) {
 	defer ts.Close()
 
 	// Run.
-	ghRepos := GitHubRepos{}
+	ghGists := GitHubGists{}
 	stdout, stderr, err := testUtils.WithCapSys(func() {
 		api := &API{TestURL: ts.URL}
-		err := api.GetRepos(&ghRepos)
+		err := api.GetGists(&ghGists)
 		assert.NoError(err)
 	})
 
@@ -182,11 +162,12 @@ func TestAPI_GetReposPagination(t *testing.T) {
 	assert.Empty(stderr)
 	assert.NoError(err)
 
-	// Verify repos.
-	expected := []string{"Documents", "Documents", "appveyor-artifacts", "appveyor-artifacts", "click*", "click*"}
+	// Verify gists.
+	expected := []string{"gistfile1.txt", "gistfile1.txt", "multi1.txt", "multi1.txt", "output.txt", "output.txt",
+		"previouslyMulti3.txt", "previouslyMulti3.txt", "timelapse.md", "timelapse.md"}
 	var actual []string
-	for _, repo := range ghRepos {
-		actual = append(actual, repo.Name)
+	for _, gist := range ghGists {
+		actual = append(actual, gist.Name)
 	}
 	sort.Strings(actual)
 	assert.Equal(expected, actual)
