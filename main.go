@@ -82,6 +82,7 @@ func Main(argv []string, testURL string) int {
 	ghAPI.TestURL = testURL
 	log.WithFields(ghAPI.Fields()).Info("Querying GitHub API...")
 	ghRepos := api.GitHubRepos{}
+	ghGists := api.GitHubGists{}
 	if !cfg.NoRepos {
 		if err = ghAPI.GetRepos(&ghRepos); err != nil {
 			log.Errorf("Querying GitHub API for repositories failed: %s", err.Error())
@@ -89,9 +90,12 @@ func Main(argv []string, testURL string) int {
 		}
 	}
 	if !cfg.NoGist {
-		// TODO
+		if err = ghAPI.GetGists(&ghGists); err != nil {
+			log.Errorf("Querying GitHub API for gists failed: %s", err.Error())
+			return 1
+		}
 	}
-	if len(ghRepos) == 0 {
+	if len(ghRepos) == 0 && len(ghGists) == 0 {
 		log.Warn("No repos or gists to backup. Nothing to do.")
 		return 1
 	}
