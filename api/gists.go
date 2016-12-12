@@ -88,6 +88,11 @@ func (a *API) GetGists(ghGists *GitHubGists) error {
 			return err
 		}
 
+		// Note rate limiting.
+		a.Limit = response.Limit
+		a.Remaining = response.Remaining
+		a.Reset = response.Reset
+
 		// Parse.
 		for _, gist := range gists {
 			var fileNames []string

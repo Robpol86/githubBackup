@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"math"
 	"os"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 
@@ -66,6 +69,36 @@ func logSummary(ghRepos *api.GitHubRepos, ghGists *api.GitHubGists) {
 	}
 }
 
+func rateLimitWarning(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRepos, ghGists *api.GitHubGists) {
+	forecast := 0
+	if len(*ghRepos) > 0 {
+		if !cfg.NoReleases {
+			forecast += len(*ghRepos)
+		}
+		if !cfg.NoIssues {
+			forecast += ghRepos.Counts()["issues"]
+		}
+	}
+	if len(*ghGists) > 0 {
+		forecast += ghGists.Counts()["comments"]
+	}
+	if ghAPI.Remaining > forecast {
+		return
+	}
+
+	log := config.GetLogger()
+	eta := int(math.Ceil(-time.Since(ghAPI.Reset.Time).Minutes()))
+	msg := "Only %d API quer%s of %d remain. This may interrupt the program."
+	log.WithField("forecast", forecast).Warnf(msg, ghAPI.Remaining, plural(ghAPI.Remaining, "y", "ies"), ghAPI.Limit)
+	msg = "GitHub will reset the counter in %d minute%s."
+	log.WithField("reset", ghAPI.Reset).Warnf(msg, eta, plural(eta, "", "s"))
+
+	if !cfg.NoPrompt {
+		fmt.Print("Press Enter to continue...")
+		bufio.NewReader(os.Stdin).ReadBytes('\n')
+	}
+}
+
 // Main holds the main logic of the program. It exists for testing (vs putting logic in main()).
 //
 // :param argv: CLI arguments to pass to docopt.Parse().
@@ -117,6 +150,7 @@ func Main(argv []string, testURL string) int {
 
 	// Backup.
 	logSummary(&ghRepos, &ghGists)
+	rateLimitWarning(&cfg, &ghAPI, &ghRepos, &ghGists)
 
 	return 0
 }

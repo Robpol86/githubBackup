@@ -52,6 +52,8 @@ type API struct {
 	User       string
 
 	TestURL string
+
+	github.Rate
 }
 
 // Fields is for logging. Returns the field name and values of the API struct as a logrus.Fields value.
