@@ -119,6 +119,8 @@ func Main(argv []string, testURL string) int {
 		return 2
 	}
 
+	// TODO directory.
+
 	// Getting token from user.
 	ghAPI, err := api.NewAPI(cfg, "")
 	if err != nil {
