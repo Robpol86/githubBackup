@@ -39,8 +39,8 @@ Options:
     -P --no-public      Skip backing up your public repos and public Gists.
     -q --quiet          Don't print anything to stdout/stderr (implies -T).
     -R --no-repos       Skip backing up your GitHub repos.
-    -t TKN --token=TKN  Use this GitHub personal access token (implies -T).
-    -T --no-prompt      Skip prompting for a GitHub personal access token.
+    -t TKN --token=TKN  Use this GitHub personal access token.
+    -T --no-prompt      Skip prompting for keyboard input.
     -u USER --user=USER GitHub user to lookup.
     -v --verbose        Debug logging.
     -V --version        Show version and exit.
@@ -119,7 +119,7 @@ func NewConfig(argv []string) (Config, error) {
 	}
 
 	// Implications.
-	if config.Quiet || config.Token != "" {
+	if config.Quiet {
 		config.NoPrompt = true
 	}
 
