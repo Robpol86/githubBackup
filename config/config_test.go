@@ -6,6 +6,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNoTabs(t *testing.T) {
+	assert := require.New(t)
+
+	assert.NotContains(usage, "\t")
+}
+
 func TestNewConfig(t *testing.T) {
 	assert := require.New(t)
 
