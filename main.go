@@ -25,7 +25,7 @@ func toFields(counts map[string]int) logrus.Fields {
 	return fields
 }
 
-func logSummary(ghRepos *api.GitHubRepos) {
+func logSummary(ghRepos *api.GitHubRepos, ghGists *api.GitHubGists) {
 	log := config.GetLogger()
 
 	// Repos.
@@ -44,10 +44,25 @@ func logSummary(ghRepos *api.GitHubRepos) {
 		if counts["issues"] == 0 {
 			log.Info("--> No GitHub Issues found.")
 		} else {
-			log.Infof("--> %d of them have GitHub Issies.", counts["issues"])
+			log.Infof("--> %d of them have GitHub Issues.", counts["issues"])
 		}
 	} else {
 		log.WithFields(toFields(counts)).Warn("Didn't find any GitHub repositories to backup.")
+	}
+
+	// Gists.
+	if counts := ghGists.Counts(); counts["all"] > 0 {
+		g := counts["all"]
+		p := counts["private"]
+		gp := plural(g, "", "s")
+		log.WithFields(toFields(counts)).Infof("Found %d gist%s (%d private).", g, gp, p)
+		if counts["comments"] == 0 {
+			log.Info("--> No comments found in any of the gists.")
+		} else {
+			log.Infof("--> %d of them have comments.", counts["comments"])
+		}
+	} else {
+		log.WithFields(toFields(counts)).Warn("Didn't find any GitHub Gists to backup.")
 	}
 }
 
@@ -101,7 +116,7 @@ func Main(argv []string, testURL string) int {
 	}
 
 	// Backup.
-	logSummary(&ghRepos)
+	logSummary(&ghRepos, &ghGists)
 
 	return 0
 }
