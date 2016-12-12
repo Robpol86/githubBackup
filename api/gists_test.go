@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"path"
 	"runtime"
+	"sort"
 	"strings"
 	"testing"
 
@@ -113,7 +114,7 @@ func TestAPI_GetGistsFilters(t *testing.T) {
 			assert.Empty(stderr)
 			assert.NoError(err)
 
-			// Verify repos.
+			// Verify gists.
 			var expected map[string]int
 			switch no {
 			case "comments":
@@ -128,4 +129,46 @@ func TestAPI_GetGistsFilters(t *testing.T) {
 			assert.Equal(expected, ghGists.Counts())
 		})
 	}
+}
+
+func TestAPI_GetGistsPagination(t *testing.T) {
+	// Link: <https://api.github.com/gists?per_page=2&page=2>; rel="next", <https://api.github.com/gists?per_page=2&page=1500>; rel="last"
+	assert := require.New(t)
+	_, file, _, _ := runtime.Caller(0)
+	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "gists_test.json"))
+	assert.NoError(err)
+
+	// HTTP response.
+	var ts *httptest.Server
+	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		values := r.URL.Query()
+		if p, ok := values["page"]; !ok || len(p) < 1 || p[0] == "0" {
+			w.Header().Add("Link", fmt.Sprintf(linksFormat(ts.URL), 1, 1))
+		}
+		w.Write(reply)
+	}))
+	defer ts.Close()
+
+	// Run.
+	ghGists := GitHubGists{}
+	stdout, stderr, err := testUtils.WithCapSys(func() {
+		api := &API{TestURL: ts.URL}
+		err := api.GetGists(&ghGists)
+		assert.NoError(err)
+	})
+
+	// Verify log.
+	assert.Empty(stdout)
+	assert.Empty(stderr)
+	assert.NoError(err)
+
+	// Verify gists.
+	expected := []string{"gistfile1.txt", "gistfile1.txt", "multi1.txt", "multi1.txt", "output.txt", "output.txt",
+		"previouslyMulti3.txt", "previouslyMulti3.txt", "timelapse.md", "timelapse.md"}
+	var actual []string
+	for _, gist := range ghGists {
+		actual = append(actual, gist.Name)
+	}
+	sort.Strings(actual)
+	assert.Equal(expected, actual)
 }
