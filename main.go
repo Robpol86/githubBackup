@@ -118,7 +118,7 @@ func collect(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRepos, ghGis
 	}
 	if len(*ghRepos) == 0 && len(*ghGists) == 0 {
 		log.Warn("No repos or gists to backup. Nothing to do.")
-		return errors.New("No repos or gists to backup.")
+		return errors.New("no repos or gists to backup")
 	}
 
 	// Backup.
