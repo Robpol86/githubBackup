@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -99,6 +100,33 @@ func rateLimitWarning(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRep
 	}
 }
 
+func collect(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRepos, ghGists *api.GitHubGists) error {
+	log := config.GetLogger()
+	log.WithFields(ghAPI.Fields()).Info("Querying GitHub API...")
+
+	if !cfg.NoRepos {
+		if err := ghAPI.GetRepos(ghRepos); err != nil {
+			log.Errorf("Querying GitHub API for repositories failed: %s", err.Error())
+			return err
+		}
+	}
+	if !cfg.NoGist {
+		if err := ghAPI.GetGists(ghGists); err != nil {
+			log.Errorf("Querying GitHub API for gists failed: %s", err.Error())
+			return err
+		}
+	}
+	if len(*ghRepos) == 0 && len(*ghGists) == 0 {
+		log.Warn("No repos or gists to backup. Nothing to do.")
+		return errors.New("No repos or gists to backup.")
+	}
+
+	// Backup.
+	logSummary(ghRepos, ghGists)
+	rateLimitWarning(cfg, ghAPI, ghRepos, ghGists)
+	return nil
+}
+
 // Main holds the main logic of the program. It exists for testing (vs putting logic in main()).
 //
 // :param argv: CLI arguments to pass to docopt.Parse().
@@ -119,7 +147,14 @@ func Main(argv []string, testURL string) int {
 		return 2
 	}
 
-	// TODO directory.
+	// Verify destination.
+	// TODO If doesn't exist: create.
+	// If exists but is file: error.
+	// If exists and is dir, check for write and execute.
+	// If exists warn user about:
+	//	skip checking/backingup issues if repo has at least one issue backedup already.
+	//	skip downloading already backedup release assets
+	//	git pull all branches on already-cloned repos.
 
 	// Getting token from user.
 	ghAPI, err := api.NewAPI(cfg, "")
@@ -130,29 +165,11 @@ func Main(argv []string, testURL string) int {
 
 	// Query APIs for repos and gists.
 	ghAPI.TestURL = testURL
-	log.WithFields(ghAPI.Fields()).Info("Querying GitHub API...")
 	ghRepos := api.GitHubRepos{}
 	ghGists := api.GitHubGists{}
-	if !cfg.NoRepos {
-		if err = ghAPI.GetRepos(&ghRepos); err != nil {
-			log.Errorf("Querying GitHub API for repositories failed: %s", err.Error())
-			return 1
-		}
-	}
-	if !cfg.NoGist {
-		if err = ghAPI.GetGists(&ghGists); err != nil {
-			log.Errorf("Querying GitHub API for gists failed: %s", err.Error())
-			return 1
-		}
-	}
-	if len(ghRepos) == 0 && len(ghGists) == 0 {
-		log.Warn("No repos or gists to backup. Nothing to do.")
+	if err := collect(&cfg, &ghAPI, &ghRepos, &ghGists); err != nil {
 		return 1
 	}
-
-	// Backup.
-	logSummary(&ghRepos, &ghGists)
-	rateLimitWarning(&cfg, &ghAPI, &ghRepos, &ghGists)
 
 	return 0
 }
