@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -13,6 +14,8 @@ import (
 	"github.com/Robpol86/githubBackup/api"
 	"github.com/Robpol86/githubBackup/config"
 )
+
+const touchFile = ".githubBackup.txt"
 
 func plural(i int, singular, plural string) string {
 	if i == 1 {
@@ -148,6 +151,22 @@ func Main(argv []string, testURL string) int {
 	}
 
 	// Verify destination.
+	if stat, err := os.Stat(cfg.Destination); os.IsNotExist(err) {
+		// create
+	} else if err != nil {
+		// some error happened while looking up the path.
+	} else if !stat.IsDir() {
+		// this is a file
+	} else {
+		// Dir exists, warn user.
+	}
+	if handle, err := os.Create(path.Join(cfg.Destination, touchFile)); err == nil {
+		handle.Close()
+		os.Remove(handle.Name())
+	} else {
+		log.Errorf("Failed to touch file: %s", err.Error())
+		return 1
+	}
 	// TODO If doesn't exist: create.
 	// If exists but is file: error.
 	// If exists and is dir, check for write and execute.
