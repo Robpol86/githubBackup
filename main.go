@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"path"
@@ -17,32 +18,58 @@ import (
 
 const touchFile = ".githubBackup.txt"
 
-func verifyDest(cfg *config.Config) error {
-	log := config.GetLogger()
+func verifyDest(dir string, noPrompt bool) error {
+	log := config.GetLogger().WithField("dir", dir)
+	stat, err := os.Stat(dir)
 
-	if stat, err := os.Stat(cfg.Destination); os.IsNotExist(err) {
-		// create
-	} else if err != nil {
-		// some error happened while looking up the path.
-	} else if !stat.IsDir() {
-		// this is a file
-	} else {
-		// Dir exists, warn user.
+	// Check if path exists.
+	if os.IsExist(err) {
+		if !stat.IsDir() {
+			log.Error("Destination path exists but is not a directory.")
+			return errors.New("destination path exists but is not a directory")
+		}
+		// Check if not empty.
+		d, err := os.Open(dir)
+		if err != nil {
+			log.Errorf("Failed opening existing directory: %s", err.Error())
+			return err
+		}
+		defer d.Close()
+		if _, err = d.Readdirnames(1); err != io.EOF {
+			log.Warn("Destination path exists and is not empty. The followig will happen:")
+			log.Warn("Issues: repos with already backed-up issues will be skipped/not updated.")
+			log.Warn("Releases: Already-downloaded assets won't be overwritten.")
+			log.Warn("Already cloned repositories will be force updated locally.")
+			if !noPrompt {
+				message := "Press Enter to continue..."
+				log.WithField("prompt", message).Debug("Prompting for enter key.")
+				fmt.Print(message)
+				bufio.NewReader(os.Stdin).ReadBytes('\n')
+			}
+		}
 	}
-	if handle, err := os.Create(path.Join(cfg.Destination, touchFile)); err == nil {
-		handle.Close()
-		os.Remove(handle.Name())
-	} else {
-		log.Errorf("Failed to touch file: %s", err.Error())
+
+	// Create if not exist.
+	if os.IsNotExist(err) {
+		if err = os.Mkdir(dir, os.ModePerm); err != nil {
+			log.Errorf("Failed creating directory: %s", err.Error())
+			return err
+		}
+	}
+
+	// An error occurred while looking up the path.
+	if err != nil {
+		log.Errorf("Failed checking if directory exists: %s", err.Error())
 		return err
 	}
-	// TODO If doesn't exist: create.
-	// If exists but is file: error.
-	// If exists and is dir, check for write and execute.
-	// If exists warn user about:
-	//	skip checking/backingup issues if repo has at least one issue backedup already.
-	//	skip downloading already backedup release assets
-	//	git pull all branches on already-cloned repos.
+
+	// Touch to verify permissions.
+	handle, err := os.Create(path.Join(dir, touchFile))
+	defer func() { handle.Close(); os.Remove(handle.Name()) }()
+	if err != nil {
+		log.WithField("file", handle.Name()).Errorf("Failed to touch file: %s", err.Error())
+		return err
+	}
 	return nil
 }
 
@@ -127,7 +154,9 @@ func rateLimitWarning(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRep
 	log.WithField("reset", ghAPI.Reset).Warnf(msg, eta, plural(eta, "", "s"))
 
 	if !cfg.NoPrompt {
-		fmt.Print("Press Enter to continue...")
+		message := "Press Enter to continue..."
+		log.WithField("prompt", message).Debug("Prompting for enter key.")
+		fmt.Print(message)
 		bufio.NewReader(os.Stdin).ReadBytes('\n')
 	}
 }
@@ -180,7 +209,7 @@ func Main(argv []string, testURL string) int {
 	}
 
 	// Verify destination.
-	if err := verifyDest(&cfg); err != nil {
+	if err := verifyDest(cfg.Destination, cfg.NoPrompt); err != nil {
 		return 1
 	}
 
