@@ -17,6 +17,35 @@ import (
 
 const touchFile = ".githubBackup.txt"
 
+func verifyDest(cfg *config.Config) error {
+	log := config.GetLogger()
+
+	if stat, err := os.Stat(cfg.Destination); os.IsNotExist(err) {
+		// create
+	} else if err != nil {
+		// some error happened while looking up the path.
+	} else if !stat.IsDir() {
+		// this is a file
+	} else {
+		// Dir exists, warn user.
+	}
+	if handle, err := os.Create(path.Join(cfg.Destination, touchFile)); err == nil {
+		handle.Close()
+		os.Remove(handle.Name())
+	} else {
+		log.Errorf("Failed to touch file: %s", err.Error())
+		return err
+	}
+	// TODO If doesn't exist: create.
+	// If exists but is file: error.
+	// If exists and is dir, check for write and execute.
+	// If exists warn user about:
+	//	skip checking/backingup issues if repo has at least one issue backedup already.
+	//	skip downloading already backedup release assets
+	//	git pull all branches on already-cloned repos.
+	return nil
+}
+
 func plural(i int, singular, plural string) string {
 	if i == 1 {
 		return singular
@@ -151,29 +180,7 @@ func Main(argv []string, testURL string) int {
 	}
 
 	// Verify destination.
-	if stat, err := os.Stat(cfg.Destination); os.IsNotExist(err) {
-		// create
-	} else if err != nil {
-		// some error happened while looking up the path.
-	} else if !stat.IsDir() {
-		// this is a file
-	} else {
-		// Dir exists, warn user.
-	}
-	if handle, err := os.Create(path.Join(cfg.Destination, touchFile)); err == nil {
-		handle.Close()
-		os.Remove(handle.Name())
-	} else {
-		log.Errorf("Failed to touch file: %s", err.Error())
-		return 1
-	}
-	// TODO If doesn't exist: create.
-	// If exists but is file: error.
-	// If exists and is dir, check for write and execute.
-	// If exists warn user about:
-	//	skip checking/backingup issues if repo has at least one issue backedup already.
-	//	skip downloading already backedup release assets
-	//	git pull all branches on already-cloned repos.
+	verifyDest(&cfg)
 
 	// Getting token from user.
 	ghAPI, err := api.NewAPI(cfg, "")
