@@ -180,7 +180,9 @@ func Main(argv []string, testURL string) int {
 	}
 
 	// Verify destination.
-	verifyDest(&cfg)
+	if err := verifyDest(&cfg); err != nil {
+		return 1
+	}
 
 	// Getting token from user.
 	ghAPI, err := api.NewAPI(cfg, "")
