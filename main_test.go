@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"testing"
@@ -136,17 +137,40 @@ func TestMainReposGistsAPIError(t *testing.T) {
 }
 
 func TestMainDestValid(t *testing.T) {
-	assert := require.New(t)
+	for _, mode := range []string{"dne", "empty", "warn"} {
+		t.Run(mode, func(t *testing.T) {
+			assert := require.New(t)
 
-	tmpdir, err := ioutil.TempDir("", "")
-	assert.NoError(err)
-	defer os.RemoveAll(tmpdir)
-	defer testUtils.ResetLogger()
+			// Tempdir.
+			tmpdir, err := ioutil.TempDir("", "")
+			assert.NoError(err)
+			defer os.RemoveAll(tmpdir)
+			defer testUtils.ResetLogger()
 
-	for _, scenario := range []string{"dne", "empty", "warn"} {
-		t.Run(scenario, func(t *testing.T) {
-			// assert := require.New(t)
-			// TODO
+			// Prepare destination directory.
+			dest := path.Join(tmpdir, "dest")
+			if mode != "dne" {
+				os.Mkdir(dest, os.ModePerm)
+			}
+			if mode == "warn" {
+				os.Mkdir(path.Join(dest, "someDir"), os.ModePerm)
+			}
+
+			// Run.
+			logs, stdout, stderr, err := testUtils.WithLogging(func() {
+				ret := Main([]string{dest}, "")
+				assert.Equal(1, ret)
+			})
+
+			// Verify streams.
+			assert.Contains(stdout, "Press Enter to continue...")
+			assert.Empty(stderr)
+
+			// Verify logs.
+			assert.NotEmpty(logs) // TODO
+
+			// Verify directory.
+			// TODO verify dir exists and touch file is gone.
 		})
 	}
 }
