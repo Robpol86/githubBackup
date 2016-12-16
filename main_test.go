@@ -134,3 +134,19 @@ func TestMainReposGistsAPIError(t *testing.T) {
 		})
 	}
 }
+
+func TestMainDestValid(t *testing.T) {
+	assert := require.New(t)
+
+	tmpdir, err := ioutil.TempDir("", "")
+	assert.NoError(err)
+	defer os.RemoveAll(tmpdir)
+	defer testUtils.ResetLogger()
+
+	for _, scenario := range []string{"dne", "empty", "warn"} {
+		t.Run(scenario, func(t *testing.T) {
+			// assert := require.New(t)
+			// TODO
+		})
+	}
+}
