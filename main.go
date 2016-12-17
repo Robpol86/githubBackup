@@ -18,7 +18,8 @@ import (
 
 const touchFile = ".githubBackup.txt"
 
-func verifyDest(dir string, noPrompt bool) error {
+// VerifyDest validates and creates the destination directory.
+func VerifyDest(dir string, noPrompt bool) error {
 	log := config.GetLogger().WithField("dir", dir)
 	stat, err := os.Stat(dir)
 
@@ -209,7 +210,7 @@ func Main(argv []string, testURL string) int {
 	}
 
 	// Verify destination.
-	if err := verifyDest(cfg.Destination, cfg.NoPrompt); err != nil {
+	if err := VerifyDest(cfg.Destination, cfg.NoPrompt); err != nil {
 		return 1
 	}
 

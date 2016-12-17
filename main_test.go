@@ -136,7 +136,8 @@ func TestMainReposGistsAPIError(t *testing.T) {
 	}
 }
 
-func TestMainDestValid(t *testing.T) {
+func TestVerifyDestValid(t *testing.T) {
+	// TODO only call VerifyDest. Move to top.
 	for _, mode := range []string{"dne", "empty", "warn"} {
 		t.Run(mode, func(t *testing.T) {
 			assert := require.New(t)
@@ -163,14 +164,17 @@ func TestMainDestValid(t *testing.T) {
 			})
 
 			// Verify streams.
-			assert.Contains(stdout, "Press Enter to continue...")
+			if mode == "warn" {
+				assert.Contains(stdout, "Press Enter to continue...")
+			}
 			assert.Empty(stderr)
 
 			// Verify logs.
 			assert.NotEmpty(logs) // TODO
 
 			// Verify directory.
-			// TODO verify dir exists and touch file is gone.
+			_, err = os.Stat(dest)
+			assert.True(os.IsExist(err))
 		})
 	}
 }
