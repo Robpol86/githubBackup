@@ -17,6 +17,55 @@ import (
 	"github.com/Robpol86/githubBackup/testUtils"
 )
 
+func TestVerifyDestValid(t *testing.T) {
+	getDest := func(assert *require.Assertions, mode string) (string, func()) {
+		// Tempdir.
+		tmpdir, err := ioutil.TempDir("", "")
+		assert.NoError(err)
+		cleanUp := func() { os.RemoveAll(tmpdir); testUtils.ResetLogger() }
+
+		// Prepare destination directory.
+		dest := path.Join(tmpdir, "dest")
+		if mode != "dne" {
+			os.Mkdir(dest, os.ModePerm)
+		}
+		if mode == "warn" {
+			os.Mkdir(path.Join(dest, "someDir"), os.ModePerm)
+		}
+
+		return mode, cleanUp
+	}
+
+	for _, mode := range []string{"dne", "empty", "warn"} {
+		t.Run(mode, func(t *testing.T) {
+			assert := require.New(t)
+			dest, cleanUp := getDest(assert, mode)
+			defer cleanUp()
+
+			// Run.
+			logs, stdout, stderr, err := testUtils.WithLogging(func() {
+				assert.NoError(VerifyDest(dest, false))
+			})
+
+			// Verify logs.
+			if mode != "warn" {
+				assert.Empty(logs.Entries)
+			} else {
+				assert.NotEmpty(logs.Entries)
+				assert.Equal("Prompting for enter key.", logs.LastEntry().Message)
+			}
+
+			// Verify streams.
+			assert.Empty(stdout)
+			assert.Empty(stderr)
+
+			// Verify directory.
+			_, err = os.Stat(dest)
+			assert.True(os.IsExist(err))
+		})
+	}
+}
+
 func TestMainVersionConsistency(t *testing.T) {
 	assert := require.New(t)
 
@@ -132,49 +181,6 @@ func TestMainReposGistsAPIError(t *testing.T) {
 			default:
 				assert.Contains(stderr, "No repos or gists to backup. Nothing to do.")
 			}
-		})
-	}
-}
-
-func TestVerifyDestValid(t *testing.T) {
-	// TODO only call VerifyDest. Move to top.
-	for _, mode := range []string{"dne", "empty", "warn"} {
-		t.Run(mode, func(t *testing.T) {
-			assert := require.New(t)
-
-			// Tempdir.
-			tmpdir, err := ioutil.TempDir("", "")
-			assert.NoError(err)
-			defer os.RemoveAll(tmpdir)
-			defer testUtils.ResetLogger()
-
-			// Prepare destination directory.
-			dest := path.Join(tmpdir, "dest")
-			if mode != "dne" {
-				os.Mkdir(dest, os.ModePerm)
-			}
-			if mode == "warn" {
-				os.Mkdir(path.Join(dest, "someDir"), os.ModePerm)
-			}
-
-			// Run.
-			logs, stdout, stderr, err := testUtils.WithLogging(func() {
-				ret := Main([]string{dest}, "")
-				assert.Equal(1, ret)
-			})
-
-			// Verify streams.
-			if mode == "warn" {
-				assert.Contains(stdout, "Press Enter to continue...")
-			}
-			assert.Empty(stderr)
-
-			// Verify logs.
-			assert.NotEmpty(logs) // TODO
-
-			// Verify directory.
-			_, err = os.Stat(dest)
-			assert.True(os.IsExist(err))
 		})
 	}
 }
