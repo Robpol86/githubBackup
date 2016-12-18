@@ -65,6 +65,21 @@ func TestVerifyDestValid(t *testing.T) {
 	}
 }
 
+func TestVerifyDestInvalid(t *testing.T) {
+	for _, mode := range []string{"file", "perm", "pperm", "pdne", "fperm"} {
+		t.Run(mode, func(t *testing.T) {
+			assert := require.New(t)
+
+			// Tempdir.
+			tmpdir, err := ioutil.TempDir("", "")
+			assert.NoError(err)
+			defer os.RemoveAll(tmpdir)
+
+			// TODO.
+		})
+	}
+}
+
 func TestMainVersionConsistency(t *testing.T) {
 	assert := require.New(t)
 
