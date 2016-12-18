@@ -30,10 +30,12 @@ func TestVerifyDestValid(t *testing.T) {
 			// Prepare destination directory.
 			dest := path.Join(tmpdir, "dest")
 			if mode != "dne" {
-				os.Mkdir(dest, os.ModePerm)
+				err := os.Mkdir(dest, os.ModePerm)
+				assert.NoError(err)
 			}
 			if mode == "warn" {
-				os.Mkdir(path.Join(dest, "someDir"), os.ModePerm)
+				err := os.Mkdir(path.Join(dest, "someDir"), os.ModePerm)
+				assert.NoError(err)
 			}
 
 			// Run.
@@ -66,7 +68,7 @@ func TestVerifyDestValid(t *testing.T) {
 }
 
 func TestVerifyDestInvalid(t *testing.T) {
-	for _, mode := range []string{"file", "perm", "pperm", "pdne", "fperm"} {
+	for _, mode := range []string{"parent dne", "parent read only", "dest read only", "is file", "touch file ro"} {
 		t.Run(mode, func(t *testing.T) {
 			assert := require.New(t)
 
@@ -75,7 +77,33 @@ func TestVerifyDestInvalid(t *testing.T) {
 			assert.NoError(err)
 			defer os.RemoveAll(tmpdir)
 
-			// TODO.
+			// Prepare destination directory.
+			dest := path.Join(tmpdir, "dest")
+			switch mode {
+			case "parent dne", "parent read only":
+				if mode == "parent read only" {
+					err := os.Mkdir(dest, 0500)
+					assert.NoError(err)
+				}
+				dest = path.Join(dest, "dest")
+			case "dest read only":
+				err := os.Mkdir(dest, 0500)
+				assert.NoError(err)
+			case "is file":
+				handle, err := os.Create(dest)
+				assert.NoError(err)
+				handle.Close()
+			case "touch file ro":
+				err := os.Mkdir(dest, os.ModePerm)
+				assert.NoError(err)
+				handle, err := os.Create(path.Join(dest, touchFile))
+				assert.NoError(err)
+				handle.Close()
+				err = os.Chmod(path.Join(dest, touchFile), 0400)
+				assert.NoError(err)
+				err = os.Chmod(dest, 0500)
+				assert.NoError(err)
+			}
 		})
 	}
 }
