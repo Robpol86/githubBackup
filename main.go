@@ -7,7 +7,7 @@ import (
 	"io"
 	"math"
 	"os"
-	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -68,9 +68,9 @@ func VerifyDest(dir string, noPrompt bool) error {
 
 	// Touch to verify permissions.
 verify:
-	handle, err := os.Create(path.Join(dir, touchFile))
+	handle, err := os.Create(filepath.Join(dir, touchFile))
 	if err != nil {
-		log.WithField("file", path.Join(dir, touchFile)).Errorf("Failed to touch file: %s", err.Error())
+		log.WithField("file", filepath.Join(dir, touchFile)).Errorf("Failed to touch file: %s", err.Error())
 		return err
 	}
 	handle.Close()

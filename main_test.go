@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -29,12 +28,12 @@ func TestVerifyDestValid(t *testing.T) {
 			defer os.RemoveAll(tmpdir)
 
 			// Prepare destination directory.
-			dest := path.Join(tmpdir, "dest")
+			dest := filepath.Join(tmpdir, "dest")
 			if mode != "dne" {
 				assert.NoError(os.Mkdir(dest, os.ModePerm))
 			}
 			if mode == "warn" {
-				assert.NoError(os.Mkdir(path.Join(dest, "someDir"), os.ModePerm))
+				assert.NoError(os.Mkdir(filepath.Join(dest, "someDir"), os.ModePerm))
 			}
 
 			// Run.
@@ -77,16 +76,16 @@ func TestVerifyDestInvalid(t *testing.T) {
 			defer os.RemoveAll(tmpdir)
 
 			// Prepare destination directory.
-			dest := path.Join(tmpdir, "dest")
+			dest := filepath.Join(tmpdir, "dest")
 			var expected string
 			switch mode {
 			case "parent dne":
-				dest = path.Join(dest, "dest")
+				dest = filepath.Join(dest, "dest")
 				expected = "Failed creating directory: "
 			case "parent read only":
 				assert.NoError(os.Mkdir(dest, 0500))
 				assert.NoError(setReadOnlyWindows(dest))
-				dest = path.Join(dest, "dest")
+				dest = filepath.Join(dest, "dest")
 				expected = "Failed creating directory: "
 			case "dest read only":
 				assert.NoError(os.Mkdir(dest, 0500))
@@ -99,7 +98,7 @@ func TestVerifyDestInvalid(t *testing.T) {
 				expected = "Destination path exists but is not a directory."
 			case "touch file ro":
 				assert.NoError(os.Mkdir(dest, os.ModePerm))
-				tfPath := path.Join(dest, touchFile)
+				tfPath := filepath.Join(dest, touchFile)
 				handle, err := os.Create(tfPath)
 				assert.NoError(err)
 				handle.Close()
@@ -194,7 +193,7 @@ func TestMainBadDest(t *testing.T) {
 
 	stdout, stderr, err := testUtils.WithCapSys(func() {
 		testUtils.ResetLogger()
-		ret := Main([]string{path.Join(tmpdir, "dne", "dest")}, "")
+		ret := Main([]string{filepath.Join(tmpdir, "dne", "dest")}, "")
 		assert.Equal(1, ret)
 	})
 
