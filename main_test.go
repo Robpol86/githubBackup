@@ -31,12 +31,10 @@ func TestVerifyDestValid(t *testing.T) {
 			// Prepare destination directory.
 			dest := path.Join(tmpdir, "dest")
 			if mode != "dne" {
-				err := os.Mkdir(dest, os.ModePerm)
-				assert.NoError(err)
+				assert.NoError(os.Mkdir(dest, os.ModePerm))
 			}
 			if mode == "warn" {
-				err := os.Mkdir(path.Join(dest, "someDir"), os.ModePerm)
-				assert.NoError(err)
+				assert.NoError(os.Mkdir(path.Join(dest, "someDir"), os.ModePerm))
 			}
 
 			// Run.
@@ -86,13 +84,13 @@ func TestVerifyDestInvalid(t *testing.T) {
 				dest = path.Join(dest, "dest")
 				expected = "Failed creating directory: "
 			case "parent read only":
-				err := os.Mkdir(dest, 0500)
-				assert.NoError(err)
+				assert.NoError(os.Mkdir(dest, 0500))
+				assert.NoError(setReadOnlyWindows(dest))
 				dest = path.Join(dest, "dest")
 				expected = "Failed creating directory: "
 			case "dest read only":
-				err := os.Mkdir(dest, 0500)
-				assert.NoError(err)
+				assert.NoError(os.Mkdir(dest, 0500))
+				assert.NoError(setReadOnlyWindows(dest))
 				expected = "Failed to touch file: "
 			case "is file":
 				handle, err := os.Create(dest)
@@ -100,15 +98,15 @@ func TestVerifyDestInvalid(t *testing.T) {
 				handle.Close()
 				expected = "Destination path exists but is not a directory."
 			case "touch file ro":
-				err := os.Mkdir(dest, os.ModePerm)
-				assert.NoError(err)
-				handle, err := os.Create(path.Join(dest, touchFile))
+				assert.NoError(os.Mkdir(dest, os.ModePerm))
+				tfPath := path.Join(dest, touchFile)
+				handle, err := os.Create(tfPath)
 				assert.NoError(err)
 				handle.Close()
-				err = os.Chmod(path.Join(dest, touchFile), 0400)
-				assert.NoError(err)
-				err = os.Chmod(dest, 0500)
-				assert.NoError(err)
+				assert.NoError(os.Chmod(tfPath, 0400))
+				assert.NoError(setReadOnlyWindows(tfPath))
+				assert.NoError(os.Chmod(dest, 0500))
+				assert.NoError(setReadOnlyWindows(dest))
 				expected = "Failed to touch file: "
 			}
 
