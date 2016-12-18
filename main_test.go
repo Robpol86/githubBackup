@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -202,7 +203,11 @@ func TestMainBadDest(t *testing.T) {
 	assert.NoError(err)
 	assert.Contains(stdout, "githubBackup "+config.Version)
 	assert.Contains(stderr, "Failed creating directory: ")
-	assert.Contains(stderr, "dest: no such file or directory")
+	if runtime.GOOS == "windows" {
+		assert.Contains(stderr, "dest: The system cannot find the path specified.")
+	} else {
+		assert.Contains(stderr, "dest: no such file or directory")
+	}
 }
 
 func TestMainTokenError(t *testing.T) {
