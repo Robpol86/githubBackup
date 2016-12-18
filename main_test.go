@@ -22,7 +22,7 @@ func TestVerifyDestValid(t *testing.T) {
 		// Tempdir.
 		tmpdir, err := ioutil.TempDir("", "")
 		assert.NoError(err)
-		cleanUp := func() { os.RemoveAll(tmpdir); testUtils.ResetLogger() }
+		cleanUp := func() { os.RemoveAll(tmpdir) }
 
 		// Prepare destination directory.
 		dest := path.Join(tmpdir, "dest")
@@ -33,7 +33,7 @@ func TestVerifyDestValid(t *testing.T) {
 			os.Mkdir(path.Join(dest, "someDir"), os.ModePerm)
 		}
 
-		return mode, cleanUp
+		return dest, cleanUp
 	}
 
 	for _, mode := range []string{"dne", "empty", "warn"} {
@@ -41,6 +41,7 @@ func TestVerifyDestValid(t *testing.T) {
 			assert := require.New(t)
 			dest, cleanUp := getDest(assert, mode)
 			defer cleanUp()
+			defer testUtils.ResetLogger()
 
 			// Run.
 			logs, stdout, stderr, err := testUtils.WithLogging(func() {
