@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -64,14 +63,6 @@ func TestVerifyDestValid(t *testing.T) {
 			assert.NoError(err)
 		})
 	}
-}
-
-func setReadOnlyWindows(path string) error {
-	if runtime.GOOS != "windows" {
-		return nil
-	}
-	cmd := "attrib +R " + path
-	return exec.Command("cmd", "/C", cmd).Run()
 }
 
 func TestVerifyDestInvalid(t *testing.T) {
