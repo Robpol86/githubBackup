@@ -57,7 +57,11 @@ func TestVerifyDestValid(t *testing.T) {
 			}
 
 			// Verify streams.
-			assert.Empty(stdout)
+			if mode == "warn" {
+				assert.Contains(stdout, "Press Enter to continue...")
+			} else {
+				assert.Empty(stdout)
+			}
 			assert.Empty(stderr)
 
 			// Verify directory exists.
