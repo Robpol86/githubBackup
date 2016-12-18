@@ -66,7 +66,7 @@ func TestVerifyDestValid(t *testing.T) {
 }
 
 func TestVerifyDestInvalid(t *testing.T) {
-	for _, mode := range []string{"parent dne", "parent read only", "dest read only", "is file", "touch file ro"} {
+	for _, mode := range []string{"parent dne", "dest read only", "is file", "touch file ro"} {
 		t.Run(mode, func(t *testing.T) {
 			assert := require.New(t)
 
@@ -80,11 +80,6 @@ func TestVerifyDestInvalid(t *testing.T) {
 			var expected string
 			switch mode {
 			case "parent dne":
-				dest = filepath.Join(dest, "dest")
-				expected = "Failed creating directory: "
-			case "parent read only":
-				assert.NoError(os.Mkdir(dest, 0500))
-				assert.NoError(setReadOnlyWindows(dest))
 				dest = filepath.Join(dest, "dest")
 				expected = "Failed creating directory: "
 			case "dest read only":
