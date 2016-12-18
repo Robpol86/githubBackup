@@ -166,7 +166,8 @@ func rateLimitWarning(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRep
 	}
 }
 
-func collect(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRepos, ghGists *api.GitHubGists) error {
+// Collect gathers initial information via GitHub APIs to find out what should be backed up.
+func Collect(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRepos, ghGists *api.GitHubGists) error {
 	log := config.GetLogger()
 	log.WithFields(ghAPI.Fields()).Info("Querying GitHub API...")
 
@@ -187,7 +188,7 @@ func collect(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRepos, ghGis
 		return errors.New("no repos or gists to backup")
 	}
 
-	// Backup.
+	// Log messages.
 	logSummary(ghRepos, ghGists)
 	rateLimitWarning(cfg, ghAPI, ghRepos, ghGists)
 	return nil
@@ -229,7 +230,7 @@ func Main(argv []string, testURL string) int {
 	ghAPI.TestURL = testURL
 	ghRepos := api.GitHubRepos{}
 	ghGists := api.GitHubGists{}
-	if err := collect(&cfg, &ghAPI, &ghRepos, &ghGists); err != nil {
+	if err := Collect(&cfg, &ghAPI, &ghRepos, &ghGists); err != nil {
 		return 1
 	}
 
