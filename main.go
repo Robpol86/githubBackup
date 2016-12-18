@@ -69,11 +69,12 @@ func VerifyDest(dir string, noPrompt bool) error {
 	// Touch to verify permissions.
 verify:
 	handle, err := os.Create(path.Join(dir, touchFile))
-	defer func() { handle.Close(); os.Remove(handle.Name()) }()
 	if err != nil {
-		log.WithField("file", handle.Name()).Errorf("Failed to touch file: %s", err.Error())
+		log.WithField("file", path.Join(dir, touchFile)).Errorf("Failed to touch file: %s", err.Error())
 		return err
 	}
+	handle.Close()
+	os.Remove(handle.Name())
 	return nil
 }
 

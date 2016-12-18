@@ -80,11 +80,11 @@ func TestVerifyDestInvalid(t *testing.T) {
 			// Prepare destination directory.
 			dest := path.Join(tmpdir, "dest")
 			switch mode {
-			case "parent dne", "parent read only":
-				if mode == "parent read only" {
-					err := os.Mkdir(dest, 0500)
-					assert.NoError(err)
-				}
+			case "parent dne":
+				dest = path.Join(dest, "dest")
+			case "parent read only":
+				err := os.Mkdir(dest, 0500)
+				assert.NoError(err)
 				dest = path.Join(dest, "dest")
 			case "dest read only":
 				err := os.Mkdir(dest, 0500)
@@ -104,6 +104,19 @@ func TestVerifyDestInvalid(t *testing.T) {
 				err = os.Chmod(dest, 0500)
 				assert.NoError(err)
 			}
+
+			// Run.
+			defer testUtils.ResetLogger()
+			logs, _, stderr, err := testUtils.WithLogging(func() {
+				assert.Error(VerifyDest(dest, false))
+			})
+
+			// Verify logs.
+			assert.NotEmpty(logs.Entries)
+			// TODO: assert.Contains(logs.LastEntry().Message, expected)
+
+			// Verify streams.
+			assert.Empty(stderr)
 		})
 	}
 }
