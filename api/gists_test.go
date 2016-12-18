@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"path"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"strings"
@@ -83,7 +83,7 @@ func TestAPI_GetGistsBad(t *testing.T) {
 func TestAPI_GetGistsFilters(t *testing.T) {
 	assert := require.New(t)
 	_, file, _, _ := runtime.Caller(0)
-	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "gists_test.json"))
+	reply, err := ioutil.ReadFile(filepath.Join(filepath.Dir(file), "gists_test.json"))
 	assert.NoError(err)
 
 	// HTTP response.
@@ -135,7 +135,7 @@ func TestAPI_GetGistsPagination(t *testing.T) {
 	// Link: <https://api.github.com/gists?per_page=2&page=2>; rel="next", <https://api.github.com/gists?per_page=2&page=1500>; rel="last"
 	assert := require.New(t)
 	_, file, _, _ := runtime.Caller(0)
-	reply, err := ioutil.ReadFile(path.Join(path.Dir(file), "gists_test.json"))
+	reply, err := ioutil.ReadFile(filepath.Join(filepath.Dir(file), "gists_test.json"))
 	assert.NoError(err)
 
 	// HTTP response.

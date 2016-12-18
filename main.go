@@ -2,9 +2,12 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"math"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -12,6 +15,68 @@ import (
 	"github.com/Robpol86/githubBackup/api"
 	"github.com/Robpol86/githubBackup/config"
 )
+
+const touchFile = ".githubBackup.txt"
+
+// VerifyDest validates and creates the destination directory.
+func VerifyDest(dir string, noPrompt bool) error {
+	log := config.GetLogger().WithField("dir", dir)
+	stat, err := os.Stat(dir)
+
+	// Check if path exists.
+	if err == nil {
+		if !stat.IsDir() {
+			log.Error("Destination path exists but is not a directory.")
+			return errors.New("destination path exists but is not a directory")
+		}
+		// Check if not empty.
+		d, err := os.Open(dir)
+		if err != nil {
+			log.Errorf("Failed opening existing directory: %s", err.Error())
+			return err
+		}
+		defer d.Close()
+		if _, err = d.Readdirnames(1); err != io.EOF {
+			log.Warn("Destination path exists and is not empty. The followig will happen:")
+			log.Warn("Issues: repos with already backed-up issues will be skipped/not updated.")
+			log.Warn("Releases: Already-downloaded assets won't be overwritten.")
+			log.Warn("Already cloned repositories will be force updated locally.")
+			if !noPrompt {
+				message := "Press Enter to continue..."
+				log.WithField("prompt", message).Debug("Prompting for enter key.")
+				fmt.Print(message)
+				bufio.NewReader(os.Stdin).ReadBytes('\n')
+			}
+		}
+		goto verify
+	}
+
+	// Create if not exist.
+	if os.IsNotExist(err) {
+		if err = os.Mkdir(dir, os.ModePerm); err != nil {
+			log.Errorf("Failed creating directory: %s", err.Error())
+			return err
+		}
+		goto verify
+	}
+
+	// An error occurred while looking up the path.
+	if err != nil {
+		log.Errorf("Failed checking if directory exists: %s", err.Error())
+		return err
+	}
+
+	// Touch to verify permissions.
+verify:
+	handle, err := os.Create(filepath.Join(dir, touchFile))
+	if err != nil {
+		log.WithField("file", filepath.Join(dir, touchFile)).Errorf("Failed to touch file: %s", err.Error())
+		return err
+	}
+	handle.Close()
+	os.Remove(handle.Name())
+	return nil
+}
 
 func plural(i int, singular, plural string) string {
 	if i == 1 {
@@ -94,9 +159,38 @@ func rateLimitWarning(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRep
 	log.WithField("reset", ghAPI.Reset).Warnf(msg, eta, plural(eta, "", "s"))
 
 	if !cfg.NoPrompt {
-		fmt.Print("Press Enter to continue...")
+		message := "Press Enter to continue..."
+		log.WithField("prompt", message).Debug("Prompting for enter key.")
+		fmt.Print(message)
 		bufio.NewReader(os.Stdin).ReadBytes('\n')
 	}
+}
+
+func collect(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRepos, ghGists *api.GitHubGists) error {
+	log := config.GetLogger()
+	log.WithFields(ghAPI.Fields()).Info("Querying GitHub API...")
+
+	if !cfg.NoRepos {
+		if err := ghAPI.GetRepos(ghRepos); err != nil {
+			log.Errorf("Querying GitHub API for repositories failed: %s", err.Error())
+			return err
+		}
+	}
+	if !cfg.NoGist {
+		if err := ghAPI.GetGists(ghGists); err != nil {
+			log.Errorf("Querying GitHub API for gists failed: %s", err.Error())
+			return err
+		}
+	}
+	if len(*ghRepos) == 0 && len(*ghGists) == 0 {
+		log.Warn("No repos or gists to backup. Nothing to do.")
+		return errors.New("no repos or gists to backup")
+	}
+
+	// Backup.
+	logSummary(ghRepos, ghGists)
+	rateLimitWarning(cfg, ghAPI, ghRepos, ghGists)
+	return nil
 }
 
 // Main holds the main logic of the program. It exists for testing (vs putting logic in main()).
@@ -119,6 +213,11 @@ func Main(argv []string, testURL string) int {
 		return 2
 	}
 
+	// Verify destination.
+	if err := VerifyDest(cfg.Destination, cfg.NoPrompt); err != nil {
+		return 1
+	}
+
 	// Getting token from user.
 	ghAPI, err := api.NewAPI(cfg, "")
 	if err != nil {
@@ -128,29 +227,11 @@ func Main(argv []string, testURL string) int {
 
 	// Query APIs for repos and gists.
 	ghAPI.TestURL = testURL
-	log.WithFields(ghAPI.Fields()).Info("Querying GitHub API...")
 	ghRepos := api.GitHubRepos{}
 	ghGists := api.GitHubGists{}
-	if !cfg.NoRepos {
-		if err = ghAPI.GetRepos(&ghRepos); err != nil {
-			log.Errorf("Querying GitHub API for repositories failed: %s", err.Error())
-			return 1
-		}
-	}
-	if !cfg.NoGist {
-		if err = ghAPI.GetGists(&ghGists); err != nil {
-			log.Errorf("Querying GitHub API for gists failed: %s", err.Error())
-			return 1
-		}
-	}
-	if len(ghRepos) == 0 && len(ghGists) == 0 {
-		log.Warn("No repos or gists to backup. Nothing to do.")
+	if err := collect(&cfg, &ghAPI, &ghRepos, &ghGists); err != nil {
 		return 1
 	}
-
-	// Backup.
-	logSummary(&ghRepos, &ghGists)
-	rateLimitWarning(&cfg, &ghAPI, &ghRepos, &ghGists)
 
 	return 0
 }

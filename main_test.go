@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,6 +16,109 @@ import (
 	"github.com/Robpol86/githubBackup/config"
 	"github.com/Robpol86/githubBackup/testUtils"
 )
+
+func TestVerifyDestValid(t *testing.T) {
+	for _, mode := range []string{"dne", "empty", "warn"} {
+		t.Run(mode, func(t *testing.T) {
+			assert := require.New(t)
+
+			// Tempdir.
+			tmpdir, err := ioutil.TempDir("", "")
+			assert.NoError(err)
+			defer os.RemoveAll(tmpdir)
+
+			// Prepare destination directory.
+			dest := filepath.Join(tmpdir, "dest")
+			if mode != "dne" {
+				assert.NoError(os.Mkdir(dest, os.ModePerm))
+			}
+			if mode == "warn" {
+				assert.NoError(os.Mkdir(filepath.Join(dest, "someDir"), os.ModePerm))
+			}
+
+			// Run.
+			defer testUtils.ResetLogger()
+			logs, stdout, stderr, err := testUtils.WithLogging(func() {
+				assert.NoError(VerifyDest(dest, false))
+			})
+
+			// Verify logs.
+			if mode != "warn" {
+				assert.Empty(logs.Entries)
+			} else {
+				assert.NotEmpty(logs.Entries)
+				assert.Equal("Prompting for enter key.", logs.LastEntry().Message)
+			}
+
+			// Verify streams.
+			if mode == "warn" {
+				assert.Contains(stdout, "Press Enter to continue...")
+			} else {
+				assert.Empty(stdout)
+			}
+			assert.Empty(stderr)
+
+			// Verify directory exists.
+			_, err = os.Stat(dest)
+			assert.NoError(err)
+		})
+	}
+}
+
+func TestVerifyDestInvalid(t *testing.T) {
+	for _, mode := range []string{"parent dne", "dest read only", "is file", "touch file ro"} {
+		t.Run(mode, func(t *testing.T) {
+			assert := require.New(t)
+
+			// Tempdir.
+			tmpdir, err := ioutil.TempDir("", "")
+			assert.NoError(err)
+			defer os.RemoveAll(tmpdir)
+
+			// Prepare destination directory.
+			dest := filepath.Join(tmpdir, "dest")
+			var expected string
+			switch mode {
+			case "parent dne":
+				dest = filepath.Join(dest, "dest")
+				expected = "Failed creating directory: "
+			case "dest read only":
+				assert.NoError(os.Mkdir(dest, 0500))
+				assert.NoError(setReadOnlyWindows(dest))
+				expected = "Failed to touch file: "
+			case "is file":
+				handle, err := os.Create(dest)
+				assert.NoError(err)
+				handle.Close()
+				expected = "Destination path exists but is not a directory."
+			case "touch file ro":
+				assert.NoError(os.Mkdir(dest, os.ModePerm))
+				tfPath := filepath.Join(dest, touchFile)
+				handle, err := os.Create(tfPath)
+				assert.NoError(err)
+				handle.Close()
+				assert.NoError(os.Chmod(tfPath, 0400))
+				assert.NoError(setReadOnlyWindows(tfPath))
+				assert.NoError(os.Chmod(dest, 0500))
+				assert.NoError(setReadOnlyWindows(dest))
+				expected = "Failed to touch file: "
+			}
+
+			// Run.
+			defer testUtils.ResetLogger()
+			logs, _, stderr, err := testUtils.WithLogging(func() {
+				assert.Error(VerifyDest(dest, false))
+			})
+
+			// Verify logs.
+			assert.NotEmpty(logs.Entries)
+			assert.Contains(logs.LastEntry().Message, expected)
+
+			// Verify streams.
+			assert.Empty(stderr)
+		})
+	}
+}
 
 func TestMainVersionConsistency(t *testing.T) {
 	assert := require.New(t)
@@ -72,6 +176,30 @@ func TestMainLogError(t *testing.T) {
 	assert.NoError(err)
 	assert.Contains(stdout, "githubBackup "+config.Version)
 	assert.Contains(stderr, "Failed to setup logging: ")
+}
+
+func TestMainBadDest(t *testing.T) {
+	assert := require.New(t)
+
+	tmpdir, err := ioutil.TempDir("", "")
+	assert.NoError(err)
+	defer os.RemoveAll(tmpdir)
+	defer testUtils.ResetLogger()
+
+	stdout, stderr, err := testUtils.WithCapSys(func() {
+		testUtils.ResetLogger()
+		ret := Main([]string{filepath.Join(tmpdir, "dne", "dest")}, "")
+		assert.Equal(1, ret)
+	})
+
+	assert.NoError(err)
+	assert.Contains(stdout, "githubBackup "+config.Version)
+	assert.Contains(stderr, "Failed creating directory: ")
+	if runtime.GOOS == "windows" {
+		assert.Contains(stderr, "dest: The system cannot find the path specified.")
+	} else {
+		assert.Contains(stderr, "dest: no such file or directory")
+	}
 }
 
 func TestMainTokenError(t *testing.T) {
