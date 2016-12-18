@@ -70,7 +70,7 @@ func setReadOnlyWindows(path string) error {
 	if runtime.GOOS != "windows" {
 		return nil
 	}
-	cmd := "attrib +r " + path
+	cmd := "attrib +R " + path
 	return exec.Command("cmd", "/C", cmd).Run()
 }
 
