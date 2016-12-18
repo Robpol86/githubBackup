@@ -60,9 +60,9 @@ func TestVerifyDestValid(t *testing.T) {
 			assert.Empty(stdout)
 			assert.Empty(stderr)
 
-			// Verify directory.
+			// Verify directory exists.
 			_, err = os.Stat(dest)
-			assert.True(os.IsExist(err))
+			assert.NoError(err)
 		})
 	}
 }

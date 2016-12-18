@@ -24,7 +24,7 @@ func VerifyDest(dir string, noPrompt bool) error {
 	stat, err := os.Stat(dir)
 
 	// Check if path exists.
-	if os.IsExist(err) {
+	if err == nil {
 		if !stat.IsDir() {
 			log.Error("Destination path exists but is not a directory.")
 			return errors.New("destination path exists but is not a directory")
@@ -48,6 +48,7 @@ func VerifyDest(dir string, noPrompt bool) error {
 				bufio.NewReader(os.Stdin).ReadBytes('\n')
 			}
 		}
+		goto verify
 	}
 
 	// Create if not exist.
@@ -56,6 +57,7 @@ func VerifyDest(dir string, noPrompt bool) error {
 			log.Errorf("Failed creating directory: %s", err.Error())
 			return err
 		}
+		goto verify
 	}
 
 	// An error occurred while looking up the path.
@@ -65,6 +67,7 @@ func VerifyDest(dir string, noPrompt bool) error {
 	}
 
 	// Touch to verify permissions.
+verify:
 	handle, err := os.Create(path.Join(dir, touchFile))
 	defer func() { handle.Close(); os.Remove(handle.Name()) }()
 	if err != nil {
