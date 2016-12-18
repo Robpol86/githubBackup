@@ -185,6 +185,26 @@ func TestMainLogError(t *testing.T) {
 	assert.Contains(stderr, "Failed to setup logging: ")
 }
 
+func TestMainBadDest(t *testing.T) {
+	assert := require.New(t)
+
+	tmpdir, err := ioutil.TempDir("", "")
+	assert.NoError(err)
+	defer os.RemoveAll(tmpdir)
+	defer testUtils.ResetLogger()
+
+	stdout, stderr, err := testUtils.WithCapSys(func() {
+		testUtils.ResetLogger()
+		ret := Main([]string{path.Join(tmpdir, "dne", "dest")}, "")
+		assert.Equal(1, ret)
+	})
+
+	assert.NoError(err)
+	assert.Contains(stdout, "githubBackup "+config.Version)
+	assert.Contains(stderr, "Failed creating directory: ")
+	assert.Contains(stderr, "dest: no such file or directory")
+}
+
 func TestMainTokenError(t *testing.T) {
 	assert := require.New(t)
 
