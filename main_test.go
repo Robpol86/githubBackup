@@ -18,32 +18,26 @@ import (
 )
 
 func TestVerifyDestValid(t *testing.T) {
-	getDest := func(assert *require.Assertions, mode string) (string, func()) {
-		// Tempdir.
-		tmpdir, err := ioutil.TempDir("", "")
-		assert.NoError(err)
-		cleanUp := func() { os.RemoveAll(tmpdir) }
-
-		// Prepare destination directory.
-		dest := path.Join(tmpdir, "dest")
-		if mode != "dne" {
-			os.Mkdir(dest, os.ModePerm)
-		}
-		if mode == "warn" {
-			os.Mkdir(path.Join(dest, "someDir"), os.ModePerm)
-		}
-
-		return dest, cleanUp
-	}
-
 	for _, mode := range []string{"dne", "empty", "warn"} {
 		t.Run(mode, func(t *testing.T) {
 			assert := require.New(t)
-			dest, cleanUp := getDest(assert, mode)
-			defer cleanUp()
-			defer testUtils.ResetLogger()
+
+			// Tempdir.
+			tmpdir, err := ioutil.TempDir("", "")
+			assert.NoError(err)
+			defer os.RemoveAll(tmpdir)
+
+			// Prepare destination directory.
+			dest := path.Join(tmpdir, "dest")
+			if mode != "dne" {
+				os.Mkdir(dest, os.ModePerm)
+			}
+			if mode == "warn" {
+				os.Mkdir(path.Join(dest, "someDir"), os.ModePerm)
+			}
 
 			// Run.
+			defer testUtils.ResetLogger()
 			logs, stdout, stderr, err := testUtils.WithLogging(func() {
 				assert.NoError(VerifyDest(dest, false))
 			})
