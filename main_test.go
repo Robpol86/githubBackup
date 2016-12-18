@@ -79,20 +79,25 @@ func TestVerifyDestInvalid(t *testing.T) {
 
 			// Prepare destination directory.
 			dest := path.Join(tmpdir, "dest")
+			var expected string
 			switch mode {
 			case "parent dne":
 				dest = path.Join(dest, "dest")
+				expected = "Failed creating directory: "
 			case "parent read only":
 				err := os.Mkdir(dest, 0500)
 				assert.NoError(err)
 				dest = path.Join(dest, "dest")
+				expected = "Failed creating directory: "
 			case "dest read only":
 				err := os.Mkdir(dest, 0500)
 				assert.NoError(err)
+				expected = "Failed to touch file: "
 			case "is file":
 				handle, err := os.Create(dest)
 				assert.NoError(err)
 				handle.Close()
+				expected = "Destination path exists but is not a directory."
 			case "touch file ro":
 				err := os.Mkdir(dest, os.ModePerm)
 				assert.NoError(err)
@@ -103,6 +108,7 @@ func TestVerifyDestInvalid(t *testing.T) {
 				assert.NoError(err)
 				err = os.Chmod(dest, 0500)
 				assert.NoError(err)
+				expected = "Failed to touch file: "
 			}
 
 			// Run.
@@ -113,7 +119,7 @@ func TestVerifyDestInvalid(t *testing.T) {
 
 			// Verify logs.
 			assert.NotEmpty(logs.Entries)
-			// TODO: assert.Contains(logs.LastEntry().Message, expected)
+			assert.Contains(logs.LastEntry().Message, expected)
 
 			// Verify streams.
 			assert.Empty(stderr)
