@@ -2,6 +2,6 @@
 
 package main
 
-func setReadOnlyWindows(path string) error {
+func setReadOnlyWindows(_ string) error {
 	return nil
 }

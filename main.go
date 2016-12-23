@@ -10,10 +10,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Sirupsen/logrus"
-
 	"github.com/Robpol86/githubBackup/api"
 	"github.com/Robpol86/githubBackup/config"
+	"github.com/Sirupsen/logrus"
 )
 
 const touchFile = ".githubBackup.txt"
