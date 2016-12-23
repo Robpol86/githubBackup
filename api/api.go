@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -74,7 +75,7 @@ func (a *API) getClient() *github.Client {
 	var httpClient *http.Client
 	if a.Token != "" {
 		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: a.Token})
-		httpClient = oauth2.NewClient(oauth2.NoContext, tokenSource)
+		httpClient = oauth2.NewClient(context.Background(), tokenSource)
 	}
 	client := github.NewClient(httpClient)
 	if a.TestURL != "" {

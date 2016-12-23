@@ -11,9 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/Robpol86/githubBackup/testUtils"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAPI_GetGistsBad(t *testing.T) {

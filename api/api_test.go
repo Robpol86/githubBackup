@@ -22,13 +22,13 @@ func TestNewAPINoPrompt(t *testing.T) {
 		t.Run(user, func(t *testing.T) {
 			assert := require.New(t)
 			logs, stdout, stderr, err := testUtils.WithLogging(func() {
-				api, err := NewAPI(config.Config{NoPrompt: true, User: user}, "xyz")
+				a, err := NewAPI(config.Config{NoPrompt: true, User: user}, "xyz")
 				if user == "" {
 					assert.EqualError(err, "no token or user given, unable to query")
 				} else {
 					assert.NoError(err)
 				}
-				assert.Equal("", api.Token)
+				assert.Equal("", a.Token)
 			})
 			assert.Len(logs.Entries, 0)
 			assert.Empty(stdout)
@@ -43,9 +43,9 @@ func TestNewAPIPrompt(t *testing.T) {
 		t.Run(user, func(t *testing.T) {
 			assert := require.New(t)
 			logs, stdout, stderr, err := testUtils.WithLogging(func() {
-				api, err := NewAPI(config.Config{User: user}, "xyz")
+				a, err := NewAPI(config.Config{User: user}, "xyz")
 				assert.NoError(err)
-				assert.Equal("xyz", api.Token)
+				assert.Equal("xyz", a.Token)
 			})
 			assert.Len(logs.Entries, 1)
 			assert.Equal(logrus.DebugLevel, logs.Entries[0].Level)
@@ -83,14 +83,14 @@ func TestNewAPIError(t *testing.T) {
 			assert := require.New(t)
 
 			logs, stdout, stderr, err := testUtils.WithLogging(func() {
-				api, err := NewAPI(config.Config{User: user}, "")
+				a, err := NewAPI(config.Config{User: user}, "")
 				if user == "" {
 					m := "failed reading stdin for token: " + validErrors.get(err.Error())
 					assert.EqualError(err, m)
 				} else {
 					assert.NoError(err)
 				}
-				assert.Equal("", api.Token)
+				assert.Equal("", a.Token)
 			})
 
 			assert.Len(logs.Entries, 2)

@@ -5,9 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/github"
-
 	"github.com/Robpol86/githubBackup/config"
+	"github.com/google/go-github/github"
 )
 
 // GitHubRepo holds data for one GitHub repository.
