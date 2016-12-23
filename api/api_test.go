@@ -4,18 +4,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/stretchr/testify/require"
-
 	"github.com/Robpol86/githubBackup/config"
 	"github.com/Robpol86/githubBackup/testUtils"
+	"github.com/Sirupsen/logrus"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewAPIWithToken(t *testing.T) {
 	assert := require.New(t)
-	api, err := NewAPI(config.Config{Token: "abc"}, "xyz")
+	a, err := NewAPI(config.Config{Token: "abc"}, "xyz")
 	assert.NoError(err)
-	assert.Equal("abc", api.Token)
+	assert.Equal("abc", a.Token)
 }
 
 func TestNewAPINoPrompt(t *testing.T) {

@@ -8,12 +8,11 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/Robpol86/githubBackup/config"
 	"github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
 	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/oauth2"
-
-	"github.com/Robpol86/githubBackup/config"
 )
 
 func prompt(message, testTokenAnswer string) (input string, err error) {

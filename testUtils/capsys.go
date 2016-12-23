@@ -29,9 +29,11 @@ func WithCapSys(function func()) (string, string, error) {
 	}
 
 	// Patch streams.
+	oldStdin := os.Stdin
 	oldStdout := os.Stdout
 	oldStderr := os.Stderr
-	defer func() { os.Stdout = oldStdout; os.Stderr = oldStderr }()
+	defer func() { os.Stdin = oldStdin; os.Stdout = oldStdout; os.Stderr = oldStderr }()
+	os.Stdin = nil
 	os.Stdout = writeStdout
 	os.Stderr = writeStderr
 
