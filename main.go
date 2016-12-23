@@ -10,10 +10,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Sirupsen/logrus"
-
 	"github.com/Robpol86/githubBackup/api"
 	"github.com/Robpol86/githubBackup/config"
+	"github.com/Sirupsen/logrus"
 )
 
 const touchFile = ".githubBackup.txt"
@@ -187,7 +186,7 @@ func collect(cfg *config.Config, ghAPI *api.API, ghRepos *api.GitHubRepos, ghGis
 		return errors.New("no repos or gists to backup")
 	}
 
-	// Backup.
+	// Log messages.
 	logSummary(ghRepos, ghGists)
 	rateLimitWarning(cfg, ghAPI, ghRepos, ghGists)
 	return nil

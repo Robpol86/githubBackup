@@ -4,11 +4,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/stretchr/testify/require"
-
 	"github.com/Robpol86/githubBackup/config"
 	"github.com/Robpol86/githubBackup/testUtils"
+	"github.com/Sirupsen/logrus"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewAPIWithToken(t *testing.T) {

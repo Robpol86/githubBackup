@@ -6,9 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/github"
-
 	"github.com/Robpol86/githubBackup/config"
+	"github.com/google/go-github/github"
 )
 
 // GitHubGist holds data for one GitHub Gist.
