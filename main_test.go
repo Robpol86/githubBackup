@@ -123,6 +123,10 @@ func TestCollectFail(t *testing.T) {
 	// TODO test failed getRepos, getGists, and len(0) len(0).
 }
 
+func TestCollect(t *testing.T) {
+	// TODO.
+}
+
 func TestMainVersionConsistency(t *testing.T) {
 	assert := require.New(t)
 
