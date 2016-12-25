@@ -162,7 +162,40 @@ func TestCollectFail(t *testing.T) {
 }
 
 func TestCollect(t *testing.T) {
-	// TODO.
+	// Read JSON files into memory.
+	assert := require.New(t)
+	_, file, _, _ := runtime.Caller(0)
+	replyRepos, err := ioutil.ReadFile(filepath.Join(filepath.Dir(file), "api", "repos_test.json"))
+	assert.NoError(err)
+	replyGists, err := ioutil.ReadFile(filepath.Join(filepath.Dir(file), "api", "gists_test.json"))
+	assert.NoError(err)
+
+	// Setup mock HTTP server.
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/user/repos" {
+			w.Write(replyRepos)
+		} else {
+			w.Write(replyGists)
+		}
+	}))
+	defer ts.Close()
+
+	// Run test.
+	cfg := config.Config{}
+	ghAPI := api.API{TestURL: ts.URL}
+	ghRepos := api.GitHubRepos{}
+	ghGists := api.GitHubGists{}
+	logs, _, _, err := testUtils.WithLogging(func() {
+		assert.NoError(Collect(&cfg, &ghAPI, &ghRepos, &ghGists))
+	})
+	assert.NoError(err)
+
+	// Verify logs.
+	assert.Equal("Found 3 repos (1 private and 1 fork).", logs.Entries[4].Message)
+	assert.Equal("--> 1 of them have wikis.", logs.Entries[5].Message)
+	assert.Equal("--> 2 of them have GitHub Issues.", logs.Entries[6].Message)
+	assert.Equal("Found 5 gists (3 private).", logs.Entries[7].Message)
+	assert.Equal("--> 1 of them have comments.", logs.Entries[8].Message)
 }
 
 func TestMainVersionConsistency(t *testing.T) {
