@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/Robpol86/githubBackup/api"
 	"github.com/Robpol86/githubBackup/config"
 	"github.com/Robpol86/githubBackup/testUtils"
 	"github.com/stretchr/testify/require"
@@ -117,6 +118,84 @@ func TestVerifyDestInvalid(t *testing.T) {
 			assert.Empty(stderr)
 		})
 	}
+}
+
+func TestCollectFail(t *testing.T) {
+	// Setup mock HTTP server.
+	var failOn string
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if failOn == "repos" && r.URL.Path == "/user/repos" {
+			w.Write([]byte("{':"))
+		} else if failOn == "gists" && r.URL.Path == "/gists" {
+			w.Write([]byte("{':"))
+		} else {
+			w.Write([]byte("[]"))
+		}
+	}))
+	defer ts.Close()
+
+	// Run tests.
+	cfg := config.Config{}
+	ghAPI := api.API{TestURL: ts.URL}
+	ghRepos := api.GitHubRepos{}
+	ghGists := api.GitHubGists{}
+	for _, failOn = range []string{"repos", "gists", "empty"} {
+		t.Run(failOn, func(t *testing.T) {
+			assert := require.New(t)
+			logs, stdout, stderr, err := testUtils.WithLogging(func() {
+				assert.Error(Collect(&cfg, &ghAPI, &ghRepos, &ghGists))
+			})
+			assert.NoError(err)
+			assert.Empty(stderr)
+			assert.Empty(stdout)
+			msg := logs.LastEntry().Message
+			switch failOn {
+			case "repos":
+				assert.Contains(msg, "Querying GitHub API for repositories failed")
+			case "gists":
+				assert.Contains(msg, "Querying GitHub API for gists failed")
+			default:
+				assert.Equal("No repos or gists to backup. Nothing to do.", msg)
+			}
+		})
+	}
+}
+
+func TestCollect(t *testing.T) {
+	// Read JSON files into memory.
+	assert := require.New(t)
+	_, file, _, _ := runtime.Caller(0)
+	replyRepos, err := ioutil.ReadFile(filepath.Join(filepath.Dir(file), "api", "repos_test.json"))
+	assert.NoError(err)
+	replyGists, err := ioutil.ReadFile(filepath.Join(filepath.Dir(file), "api", "gists_test.json"))
+	assert.NoError(err)
+
+	// Setup mock HTTP server.
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/user/repos" {
+			w.Write(replyRepos)
+		} else {
+			w.Write(replyGists)
+		}
+	}))
+	defer ts.Close()
+
+	// Run test.
+	cfg := config.Config{}
+	ghAPI := api.API{TestURL: ts.URL}
+	ghRepos := api.GitHubRepos{}
+	ghGists := api.GitHubGists{}
+	logs, _, _, err := testUtils.WithLogging(func() {
+		assert.NoError(Collect(&cfg, &ghAPI, &ghRepos, &ghGists))
+	})
+	assert.NoError(err)
+
+	// Verify logs.
+	assert.Equal("Found 3 repos (1 private and 1 fork).", logs.Entries[4].Message)
+	assert.Equal("--> 1 of them have wikis.", logs.Entries[5].Message)
+	assert.Equal("--> 2 of them have GitHub Issues.", logs.Entries[6].Message)
+	assert.Equal("Found 5 gists (3 private).", logs.Entries[7].Message)
+	assert.Equal("--> 1 of them have comments.", logs.Entries[8].Message)
 }
 
 func TestMainVersionConsistency(t *testing.T) {
@@ -228,36 +307,17 @@ func TestMainReposGistsAPIError(t *testing.T) {
 	defer os.RemoveAll(tmpdir)
 	defer testUtils.ResetLogger()
 
-	var failOn string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if failOn == "repos" && r.URL.Path == "/users/Robpol86/repos" {
-			w.Write([]byte("{':"))
-		} else if failOn == "gists" && r.URL.Path == "/users/Robpol86/gists" {
-			w.Write([]byte("{':"))
-		} else {
-			w.Write([]byte("[]"))
-		}
+		w.Write([]byte("{':"))
 	}))
 	defer ts.Close()
 
-	for _, failOn = range []string{"repos", "gists", "empty"} {
-		t.Run(failOn, func(t *testing.T) {
-			assert := require.New(t)
-			stdout, stderr, err := testUtils.WithCapSys(func() {
-				testUtils.ResetLogger()
-				ret := Main([]string{"-TuRobpol86", tmpdir}, ts.URL)
-				assert.Equal(1, ret)
-			})
-			assert.NoError(err)
-			assert.Contains(stdout, "githubBackup "+config.Version)
-			switch failOn {
-			case "repos":
-				assert.Contains(stderr, "Querying GitHub API for repositories failed")
-			case "gists":
-				assert.Contains(stderr, "Querying GitHub API for gists failed")
-			default:
-				assert.Contains(stderr, "No repos or gists to backup. Nothing to do.")
-			}
-		})
-	}
+	stdout, stderr, err := testUtils.WithCapSys(func() {
+		testUtils.ResetLogger()
+		ret := Main([]string{"-TuRobpol86", tmpdir}, ts.URL)
+		assert.Equal(1, ret)
+	})
+	assert.NoError(err)
+	assert.Contains(stdout, "githubBackup "+config.Version)
+	assert.Contains(stderr, "Querying GitHub API for repositories failed")
 }
