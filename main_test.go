@@ -172,6 +172,8 @@ func TestCollect(t *testing.T) {
 
 	// Setup mock HTTP server.
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("X-RateLimit-Limit", "60")
+		w.Header().Add("X-RateLimit-Remaining", "58")
 		if r.URL.Path == "/user/repos" {
 			w.Write(replyRepos)
 		} else {
@@ -196,6 +198,7 @@ func TestCollect(t *testing.T) {
 	assert.Equal("--> 2 of them have GitHub Issues.", logs.Entries[6].Message)
 	assert.Equal("Found 5 gists (3 private).", logs.Entries[7].Message)
 	assert.Equal("--> 1 of them have comments.", logs.Entries[8].Message)
+	assert.Equal(logs.Entries[8], logs.LastEntry())
 }
 
 func TestMainVersionConsistency(t *testing.T) {
