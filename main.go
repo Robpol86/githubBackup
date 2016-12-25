@@ -22,8 +22,7 @@ func VerifyDest(dir string, noPrompt bool) error {
 	log := config.GetLogger().WithField("dir", dir)
 	stat, err := os.Stat(dir)
 
-	// Check if path exists.
-	if err == nil {
+	if err == nil { // Check if path exists.
 		if !stat.IsDir() {
 			log.Error("Destination path exists but is not a directory.")
 			return errors.New("destination path exists but is not a directory")
@@ -47,26 +46,17 @@ func VerifyDest(dir string, noPrompt bool) error {
 				bufio.NewReader(os.Stdin).ReadBytes('\n')
 			}
 		}
-		goto verify
-	}
-
-	// Create if not exist.
-	if os.IsNotExist(err) {
+	} else if os.IsNotExist(err) { // Create if not exist.
 		if err = os.Mkdir(dir, os.ModePerm); err != nil {
 			log.Errorf("Failed creating directory: %s", err.Error())
 			return err
 		}
-		goto verify
-	}
-
-	// An error occurred while looking up the path.
-	if err != nil {
+	} else { // An error occurred while looking up the path.
 		log.Errorf("Failed checking if directory exists: %s", err.Error())
 		return err
 	}
 
 	// Touch to verify permissions.
-verify:
 	handle, err := os.Create(filepath.Join(dir, touchFile))
 	if err != nil {
 		log.WithField("file", filepath.Join(dir, touchFile)).Errorf("Failed to touch file: %s", err.Error())
