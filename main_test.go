@@ -9,7 +9,9 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/Robpol86/githubBackup/api"
 	"github.com/Robpol86/githubBackup/config"
@@ -187,10 +189,12 @@ func TestCollect(t *testing.T) {
 	ghAPI := api.API{TestURL: ts.URL}
 	ghRepos := api.GitHubRepos{}
 	ghGists := api.GitHubGists{}
-	logs, _, _, err := testUtils.WithLogging(func() {
+	logs, stdout, stderr, err := testUtils.WithLogging(func() {
 		assert.NoError(Collect(&cfg, &ghAPI, &ghRepos, &ghGists))
 	})
 	assert.NoError(err)
+	assert.Empty(stderr)
+	assert.Empty(stdout)
 
 	// Verify logs.
 	assert.Equal("Found 3 repos (1 private and 1 fork).", logs.Entries[4].Message)
@@ -199,6 +203,47 @@ func TestCollect(t *testing.T) {
 	assert.Equal("Found 5 gists (3 private).", logs.Entries[7].Message)
 	assert.Equal("--> 1 of them have comments.", logs.Entries[8].Message)
 	assert.Equal(logs.Entries[8], logs.LastEntry())
+}
+
+func TestCollectRateLimit(t *testing.T) {
+	// Read JSON file into memory.
+	assert := require.New(t)
+	_, file, _, _ := runtime.Caller(0)
+	reply, err := ioutil.ReadFile(filepath.Join(filepath.Dir(file), "api", "repos_test.json"))
+	assert.NoError(err)
+
+	// Setup mock HTTP server.
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("X-RateLimit-Limit", "60")
+		w.Header().Add("X-RateLimit-Remaining", "1")
+		w.Header().Add("X-RateLimit-Reset", strconv.Itoa(int(time.Now().Unix()+120)))
+		if r.URL.Path == "/user/repos" {
+			w.Write(reply)
+		} else {
+			w.Write([]byte("[]"))
+		}
+	}))
+	defer ts.Close()
+
+	// Run test.
+	cfg := config.Config{}
+	ghAPI := api.API{TestURL: ts.URL}
+	ghRepos := api.GitHubRepos{}
+	ghGists := api.GitHubGists{}
+	logs, stdout, stderr, err := testUtils.WithLogging(func() {
+		assert.NoError(Collect(&cfg, &ghAPI, &ghRepos, &ghGists))
+	})
+	assert.NoError(err)
+	assert.Empty(stderr)
+	assert.Equal("Press Enter to continue...", stdout)
+
+	// Verify logs.
+	assert.Equal("Found 3 repos (1 private and 1 fork).", logs.Entries[4].Message)
+	assert.Equal("--> 1 of them have wikis.", logs.Entries[5].Message)
+	assert.Equal("--> 2 of them have GitHub Issues.", logs.Entries[6].Message)
+	assert.Equal("Didn't find any GitHub Gists to backup.", logs.Entries[7].Message)
+	assert.Equal("Only 1 API query of 60 remain. This may interrupt the program.", logs.Entries[8].Message)
+	assert.Equal("GitHub will reset the counter in 2 minutes.", logs.Entries[9].Message)
 }
 
 func TestMainVersionConsistency(t *testing.T) {
